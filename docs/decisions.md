@@ -1,0 +1,34 @@
+# Decision log
+
+Short records of decisions that shape Trilho. Newest decisions at the bottom.
+
+| # | Date | Decision | Why | Alternatives considered |
+|---|---|---|---|---|
+| 001 | 13 Nov | **Next.js + TypeScript** instead of Laravel | Preference for JavaScript; PHP was only required by the FEUP server, which is not used | Laravel (PHP) |
+| 002 | 13 Nov | **Host on Vercel**, not the FEUP server (gnomo) | gnomo requires the FEUP VPN from outside FEUP; the app must be reachable by other applications | FEUP gnomo server, Laravel Cloud, Railway |
+| 003 | 13 Nov | **Zero-cost constraint**: every service on a free plan | Student project, no budget | Paid plans |
+| 004 | 13 Nov | **Neon** for Postgres, not Supabase | Neon free scales to zero and wakes in milliseconds; Supabase free pauses projects after ~7 days of low activity | Supabase |
+| 005 | 13 Nov | **EU region (Frankfurt)** for database and functions | Low latency for users in Portugal; student personal data stays in the EU (GDPR) | US East (Neon default) |
+| 006 | 13 Nov | **Better Auth** inside the app | User tables live in our own schema with real foreign keys; no vendor lock-in | Supabase Auth, Neon Auth |
+| 007 | 13 Nov | **Gmail SMTP** for verification emails | Resend's free plan only sends to the account owner without a verified (paid) domain | Resend |
+| 008 | 13 Nov | **Production env vars set manually** in Vercel, Production only | Avoid copying local values to production; Preview will point to the `dev` branch later | Import `.env` file |
+| 009 | 15 Nov | **No `src/` directory** | Project was created without it; moving adds configuration changes with no benefit | Move `app/` into `src/` |
+| 010 | 15 Nov | **Registration with `@up.pt` / `@fe.up.pt` email + verification** (D1) | FEUP SSO is out of reach for the MVP; verification makes the domain restriction real | FEUP SSO, open registration |
+| 011 | 15 Nov | **Statistic requires ≥ 5 replied applications** (D2, R3) | Without a reply there is no response time; fixes an inconsistency in Assignment 1 | 5 applications of any kind |
+| 012 | 15 Nov | **60-day rule only for Sent and In process** (D3, R5) | A process at Interview or Offer that goes quiet is a different situation | All statuses |
+| 013 | 15 Nov | **Company autocomplete + name normalisation** (D4, R11) | Consistent names are needed for company statistics; merging subtler duplicates (US15) is cut | Free text, fixed company list |
+| 014 | 15 Nov | **Reminders on the pipeline card only** (D5) | Notifications are out of scope (Won't) | Email reminders |
+| 015 | 15 Nov | **Roles `student` / `career_service`; Career Service accounts created by the seed** (D6) | A public "I am Career Service" sign-up would be a security hole | Role chosen at sign-up |
+| 016 | 15 Nov | **US14 (spreadsheet import) cut, kept as the first post-pilot iteration** | The MVP must first prove students log applications manually. If activation is low because of past applications, import becomes the next feature: a cut today that becomes a data-driven decision tomorrow | Build import in the MVP |
+| 017 | 15 Nov | **Typical range = median, rounded down/up to weeks** (R2) | Simple, matches "median-based" in Assignment 1, easy to test | Interquartile range (P25–P75) |
+| 018 | 15 Nov | **Reminder threshold = company median** (R4) | Starting at the median leaves "raise the threshold" as the fallback if many reminders are dismissed (H3) | Upper end of the range |
+| 019 | 15 Nov | **60-day rule evaluated when the pipeline loads, backdated to last change + 60 days** (R5) | No scheduled job needed; the history still shows the correct date | Daily cron job |
+| 020 | 15 Nov | **Free movement between manual statuses; change date pre-filled with today** (R6) | Students make mistakes and correct them, and often log a reply days after receiving it; a strict state machine adds friction without value | Strict forward-only transitions; change date always today |
+| 021 | 15 Nov | **Dashboard shows companies and channels only with ≥ 5 applications** (R8) | A row based on one student would identify that student | No threshold |
+| 022 | 15 Nov | **Layered architecture with pure rule functions and a service layer** | Rules are testable without a database; UI and future API share the same logic | Logic inside pages / Server Actions |
+| 023 | 15 Nov | **Zod for validation** | One schema validates both the form and the server | Hand-written validation |
+| 024 | 15 Nov | **"Today" passed as a parameter to business rules** | Tests give the same result every day | Reading the system clock inside rules |
+| 025 | 15 Nov | **One Neon branch per environment** (`production`, `dev`, `test`) | Development and tests never touch real data | One shared database |
+| 026 | 15 Nov | **Statistics calculated on request, never cached** | Withdrawing consent must take effect immediately (US08) | Cached statistics |
+| 027 | 15 Nov | **Deleting an account also deletes the user's product events** | GDPR right to erasure; metrics lose deleted users, which is accepted | Keep anonymised events |
+| 028 | 15 Nov | **Keep `AGENTS.md` (generated by Next.js) and import it from `CLAUDE.md`** | `AGENTS.md` is written and re-added by `next dev`, so it cannot be removed; it tells agents to read the installed Next.js docs. `CLAUDE.md` holds the project rules written for this project | Single merged `CLAUDE.md` |

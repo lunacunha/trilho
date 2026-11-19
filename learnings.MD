@@ -71,3 +71,20 @@ Máquina de estados: a lista de estados de uma candidatura e as mudanças permit
 3. Services (lib/services/)      → a lógica de negócio: permissões, regras, transações.
    + Rules (lib/rules/)          → as regras R1–R10 como funções puras (sem base de dados).
 4. Dados (db/)                   → o esquema das tabelas (Drizzle) e a ligação ao Neon.
+
+- as migrations criam a base de dados do zero, o seed enche-a com dados fictícios realistas
+
+- Chave primária (PK): o identificador único de cada linha. Por exemplo, o id de uma candidatura.
+- Chave estrangeira (FK): uma coluna que aponta para a PK de outra tabela. Por exemplo, application.user_id aponta para user.id. A base de dados garante que aponta para algo que existe: é a integridade referencial.
+- ON DELETE: o que acontece às linhas que apontam para uma linha apagada.
+    - CASCADE: apaga-as também. Por exemplo, apagar a conta apaga as candidaturas (US08).
+    - RESTRICT: impede a eliminação. Por exemplo, não se apaga uma empresa que tem candidaturas.
+    - SET NULL: mantém a linha, mas esvazia a ligação.
+- Restrições: NOT NULL (obrigatório), UNIQUE (sem repetidos) e CHECK (uma condição, por exemplo um comprimento ≤ 120). Ficam na base de dados como última linha de defesa, mesmo que o código tenha um erro.
+- Normalização: cada facto guarda-se num só sítio. O nome “Lumen Energy” vive uma vez na tabela company; as candidaturas guardam só o ID. Se o nome mudar, muda num sítio.
+- Porque é que o histórico é uma tabela e não colunas: uma candidatura pode ter 1, 3 ou 7 mudanças de estado. Com colunas (data_sent, data_interview...) não cabem repetições nem idas e voltas (a R6 permite-as). Com uma tabela status_change, cada mudança é uma linha. É daí que a R1 calcula o tempo de resposta.
+- Índice: um “sumário” que torna as pesquisas rápidas. Cria-se nas colunas usadas para procurar, por exemplo application.user_id, porque o pipeline procura as candidaturas de uma estudante.
+- Ligação ao resto
+    - As tabelas implementam o SPEC: as regras R1–R12 leem-nas, os eventos da secção 9 vivem numa delas, e a US08 depende do ON DELETE. Na Fase 4, os testes de integração correm contra a branch test com estas tabelas.
+
+- nota no data model: o reminder aponta para a candidatura e para a mudança de estado, mas a mudança de estado já pertence a uma candidatura. É uma pequena redundância, com o mesmo raciocínio do current_status: torna as queries mais simples (“lembretes desta candidatura”), e é o service que garante que as duas ligações batem certo, porque a base de dados não o verifica sozinha

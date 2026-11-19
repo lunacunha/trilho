@@ -78,6 +78,7 @@ _Example:_ 6 applications with a response, 2 of them from students who withdrew 
 - If the company has a statistic (R3 met): threshold = the company's **median** response time in days.
 - Otherwise: threshold = **14 days**.
 - A reminder is shown when days since last change **≥ threshold**.
+- If the median is not a whole number, the threshold is rounded up (e.g. median 16.5 → threshold 17 days), because days are whole numbers.
 
 _Example:_ company median 17 days; application in "Sent", last change 17 days ago → reminder. 16 days ago → no reminder.
 _Example:_ company without statistic; 14 days → reminder; 13 days → no reminder.

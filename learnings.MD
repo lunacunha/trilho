@@ -88,3 +88,7 @@ Máquina de estados: a lista de estados de uma candidatura e as mudanças permit
     - As tabelas implementam o SPEC: as regras R1–R12 leem-nas, os eventos da secção 9 vivem numa delas, e a US08 depende do ON DELETE. Na Fase 4, os testes de integração correm contra a branch test com estas tabelas.
 
 - nota no data model: o reminder aponta para a candidatura e para a mudança de estado, mas a mudança de estado já pertence a uma candidatura. É uma pequena redundância, com o mesmo raciocínio do current_status: torna as queries mais simples (“lembretes desta candidatura”), e é o service que garante que as duas ligações batem certo, porque a base de dados não o verifica sozinha
+
+- variáveis do Better Auth
+    - BETTER_AUTH_SECRET: uma chave secreta aleatória. Quando alguém faz login, o Better Auth entrega ao browser um “bilhete” (o cookie de sessão) assinado com esta chave. Em cada pedido seguinte, verifica a assinatura para saber que o bilhete é verdadeiro. Quem souber a chave consegue falsificar bilhetes e entrar como qualquer pessoa. Por isso é secreta e nunca vai para o Git.
+    - BETTER_AUTH_URL: o endereço da app. O Better Auth usa-o para construir links (por exemplo, o link de verificação no email) e para confirmar que os pedidos vêm do sítio certo.

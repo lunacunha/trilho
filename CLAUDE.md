@@ -77,6 +77,7 @@ The database and test scripts are added in Phases 3–4. If a script you need do
 - Never log secrets, passwords or tokens.
 - Never loosen an authorization or consent check to make something work.
 - Errors shown to users are short and actionable; technical details only go to server logs.
+- Never use real-looking email addresses in tests, seeds or smoke tests. Use `example.com` addresses, or the developer's own address when a real email must be received.
 
 ## Conventions
 

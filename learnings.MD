@@ -106,3 +106,16 @@ fase 4: fazer testes a partir da spec
 - Isolamento: cada teste de integração começa com a base de dados limpa e cria só os dados de que precisa (2 estudantes, 1 empresa...). Não usa o seed grande. Assim, quando um teste falha, sabes exatamente porquê.
 - Ligação ao resto
     - Os testes leem o SPEC (os IDs e os exemplos numéricos), usam as tabelas da Fase 3 e são o critério de “feito” de cada fatia da Fase 5: uma fatia só está pronta quando os testes dela ficam verdes.
+
+
+fase 5 
+
+- Fatia vertical: em vez de fazer todos os ecrãs e depois toda a lógica, faz-se uma história completa de cada vez. No fim de cada fatia tens algo que funciona e que podes mostrar. Se o tempo acabar a meio, o que está feito funciona.
+- Autenticação vs autorização: a autenticação responde a “quem és?” (o login). A autorização responde a “o que podes fazer?” (o papel e a posse dos dados). A autenticação é do Better Auth; a autorização é dos teus services, já testada na Fase 4.
+- Sessão e cookie: depois do login, o browser guarda um “bilhete” assinado com o BETTER_AUTH_SECRET. Em cada pedido, o servidor verifica-o para saber quem és.
+- Server Action: uma função do servidor que um formulário chama diretamente. É a camada fina de “entrada”: lê a sessão, valida com o Zod e chama um service.
+- Proteção de rotas: antes de mostrar uma página, verifica-se a sessão e redireciona-se (para o login, o consentimento ou o dashboard). Usa a regra routeAccess, já testada.
+- Transação: “tudo ou nada”. Mudar o estado de uma candidatura escreve a nova linha do histórico e troca o current_status: ou acontecem as duas coisas, ou nenhuma (a T2 da Fase 3).
+- Green: cada fatia transforma em verdes os testes vermelhos da Fase 4. É a prova automática de que a fatia cumpre o SPEC.
+
+A ordem não é arbitrária: cada fatia usa o que a anterior construiu. Não há pipeline sem login, e não há lembretes sem pipeline.

@@ -1,9 +1,10 @@
 // Zod schemas for every server-side input (SPEC §10). Factories take "today" (and other
 // context) as parameters because some checks depend on it.
-import type { z } from "zod";
+import { z } from "zod";
 import type { ApplicationStatus } from "../db/schema.ts";
 import type { Channel, JobType, ManualStatus, Sector } from "./fixed-lists.ts";
 import { notImplemented } from "./not-implemented.ts";
+import { isAllowedEmailDomain } from "./rules/email-domain.ts";
 
 export const EMAIL_DOMAIN_MESSAGE = "Use your University of Porto email (@up.pt or @fe.up.pt)";
 export const DATE_SENT_FUTURE_MESSAGE = "Date sent cannot be in the future";
@@ -12,7 +13,18 @@ export type RegistrationInput = { name: string; email: string; password: string 
 
 /** US01-1/2: name, email with domain exactly up.pt or fe.up.pt (any case), password ≥ 8. */
 export function registrationSchema(): z.ZodType<RegistrationInput, unknown> {
-  return notImplemented();
+  return z.object({
+    name: z.string().trim().min(1, "Enter your name"),
+    email: z
+      .string()
+      .trim()
+      .min(1, "Enter your email")
+      .pipe(z.email("Enter a valid email").refine(isAllowedEmailDomain, EMAIL_DOMAIN_MESSAGE)),
+    password: z
+      .string()
+      .min(8, "Use at least 8 characters")
+      .max(128, "Use at most 128 characters"),
+  });
 }
 
 export type ApplicationInput = {

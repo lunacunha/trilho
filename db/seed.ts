@@ -6,6 +6,7 @@
 // - Users are created through Better Auth (hashed passwords), then marked verified.
 
 import "./env.ts";
+import { randomUUID } from "node:crypto";
 import { inArray, sql } from "drizzle-orm";
 import { auth } from "../lib/auth.ts";
 import { displayCompanyName, normalizeCompanyName } from "../lib/rules/company-name.ts";
@@ -437,13 +438,22 @@ async function main() {
   );
   await db.delete(s.user).where(inArray(s.user.email, seededEmails));
 
-  // 4. Create users through Better Auth (hashed passwords)
+  // 4. Create users with Better Auth's password hashing, but not through sign-up:
+  //    sign-up would send verification emails to the (real) up.pt / fe.up.pt domains.
+  const authContext = await auth.$context;
+  const passwordHash = await authContext.password.hash(SEED_PASSWORD!);
   const userIds = new Map<string, string>();
   for (const u of ALL_USERS) {
-    const res = await auth.api.signUpEmail({
-      body: { name: u.name, email: u.email, password: SEED_PASSWORD! },
+    const id = randomUUID();
+    await db.insert(s.user).values({ id, name: u.name, email: u.email });
+    await db.insert(s.account).values({
+      id: randomUUID(),
+      accountId: id,
+      providerId: "credential",
+      userId: id,
+      password: passwordHash,
     });
-    userIds.set(u.key, res.user.id);
+    userIds.set(u.key, id);
   }
   const userId = (key: string) => userIds.get(key)!;
 
@@ -585,8 +595,6 @@ async function main() {
         })
         .where(sql`${s.user.id} = ${userId(u.key)}`);
     }
-    // Sessions created by sign-up are not needed
-    await tx.delete(s.session).where(inArray(s.session.userId, [...userIds.values()]));
 
     await tx.insert(s.sector).values(SECTORS.map((name) => ({ id: sectorIds.get(name)!, name })));
     await tx.insert(s.channel).values(CHANNELS.map((name) => ({ id: channelIds.get(name)!, name })));

@@ -33,6 +33,7 @@ The MVP keeps the 8 Must stories (US01–US08), adjusted for the MVP context. Ev
 | US13 | Notes and job link per application | Personal convenience that is not tied to the core value or to any pilot hypothesis; cheap to add later (two optional fields). |
 | US14 | Import an existing spreadsheet | The MVP must first prove that students log applications manually. Import is the first candidate for the post-pilot iteration if activation is low: a cut today that becomes a data-driven decision tomorrow. |
 | US15 | Career Service manages lists and merges duplicate companies | Adds an admin workflow with significant complexity. In the MVP, fixed lists come from the seed and name normalisation (US02) handles the most common duplicates. |
+| US16 | Edit account name | Found during the US01 build. The name is not shown anywhere in the MVP, so a wrong name has no functional impact. Candidate for slice 08 if time allows. |
 | — | Won't (v1): company accounts and "replies to all" badge, recruiting calendar, alumni referral programme, email/LinkedIn integration, notifications, AI | Unchanged from Assignment 1: they need formal partnerships, several years of data, or are not needed for the core value. |
 
 ## 4. Changes from Assignment 1
@@ -106,4 +107,4 @@ All targets are **assumptions** (no benchmark exists yet) and will be validated 
 - How is an "active student" defined in the Career Service dashboard? (Proposal: created or updated ≥ 1 application in the last 30 days.)
 - What exactly is a "first response"? (To be defined in SPEC.md: likely the first status change from "Sent" to any status except the automatic "No response".)
 - Which point of the company's typical range triggers a reminder: the lower end, the median or the upper end? (To be defined in SPEC.md.)
-- Will verification emails sent through Gmail SMTP reach `@up.pt` inboxes, or land in spam? (Technical risk, to test in the authentication slice.)
+- Will verification emails sent through Gmail SMTP reach `@up.pt` inboxes, or land in spam? (Technical risk, to test in the authentication slice.) : Tested on 21 Nov: delivered to the inbox.

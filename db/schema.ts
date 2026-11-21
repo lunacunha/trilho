@@ -269,3 +269,4 @@ export const productEvent = pgTable(
 
 export type ApplicationStatus = (typeof applicationStatus.enumValues)[number];
 export type UserRole = (typeof userRole.enumValues)[number];
+export type ProductEventName = (typeof eventName.enumValues)[number];

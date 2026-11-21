@@ -87,7 +87,7 @@ _Example:_ company without statistic; 14 days → reminder; 13 days → no remin
 _Example:_ last change on 1 Sep; the student opens the pipeline on 15 Nov → "No response", recorded on 31 Oct.
 _Example:_ application in "Interview" since 1 Sep → unchanged.
 
-**R6 — Status transitions.** A student can move an application freely between the manual statuses (Sent, In process, Interview, Offer, Rejected), in any direction, to correct mistakes. "No response" is never selectable manually. An application in "No response" can move to any manual status (late reply). Every change creates a status change record. The date of the change is pre-filled with today; the student only changes it if the reply came on another day. It cannot be in the future or before the date sent.
+**R6 — Status transitions.** A student can move an application freely between the manual statuses (Sent, In process, Interview, Offer, Rejected), in any direction, to correct mistakes. "No response" is never selectable manually. An application in "No response" can move to any manual status (late reply). Every change creates a status change record. The date of the change is pre-filled with today; the student only changes it if the reply came on another day. It cannot be in the future or before the date sent. It also cannot be before the application's previous status change, so the history stays in chronological order. Changing to the status the application already has (e.g. Sent → Sent) is rejected: it is not a real change and would reset the reminder's quiet period (R12). The service enforces this rule itself, not only the form.
 
 **R7 — Reply rate (dashboard).** Applications with a first response (R1) ÷ all applications, counting only consenting students.
 _Example:_ 20 applications to Northwind, 7 with a first response → 35%.
@@ -97,6 +97,7 @@ _Example:_ only Luna applied to company X → company X does not appear.
 
 **R9 — Active student (dashboard).** A consenting student who created an application or made a status change in the **last 30 days** (today included).
 _Example:_ today 15 Nov; last activity 20 Oct → active; last activity 10 Oct → not active.
+_Boundary:_ the window is today plus the 29 previous days. Today 15 Nov → 17 Oct is active; 16 Oct is not.
 
 **R10 — Days since sent (pipeline card).** Today − date sent, in calendar days.
 _Example:_ sent on 1 Nov, today 15 Nov → "14 days".
@@ -115,7 +116,7 @@ Each scenario has an ID (e.g. `US02-3`) used in test names.
 _As a student, I want to register with my university email and choose whether to share my data anonymously, so that I control my privacy._
 
 - **US01-1 Register with an allowed email.** Given no account exists for `ana@up.pt`, when she registers with name, email `ana@up.pt` and a password of at least 8 characters, then an account with role `student` is created, a verification email is sent, and she sees "Check your inbox to verify your email".
-- **US01-2 Reject other domains.** Given the registration form, when someone registers with `ana@gmail.com`, then the error "Use your University of Porto email (@up.pt or @fe.up.pt)" is shown and no account is created. The domain check ignores case (`ANA@UP.PT` is accepted).
+- **US01-2 Reject other domains.** Given the registration form, when someone registers with `ana@gmail.com`, then the error "Use your University of Porto email (@up.pt or @fe.up.pt)" is shown and no account is created. The domain check ignores case (`ANA@UP.PT` is accepted). Only the exact domains are accepted: subdomains such as ana@edu.fe.up.pt are rejected.
 - **US01-3 Unverified accounts cannot log in.** Given a registered but unverified account, when the student logs in with the correct password, then she is not logged in and sees "Verify your email first", with an option to resend the email.
 - **US01-4 Consent comes first.** Given a verified student who has not answered the consent question, when she logs in or opens any page, then she is redirected to the consent screen, and neither option is pre-selected.
 - **US01-5 Decline consent.** Given the consent screen, when she chooses "Don't share", then her consent is `false` (with the date), she is taken to the pipeline, she can use every student feature, and her applications never enter any statistic (R3, R7, R8, R9).
@@ -147,7 +148,7 @@ _As a student, I want to update, edit or delete an application, so that my pipel
 
 - **US04-1 Change status.** Given an application in "Sent", sent on 1 Oct, when the student changes it to "In process" with date 18 Oct, then the status is updated and a status change ("In process", 18 Oct) is recorded. The detail page shows the full history in chronological order, each entry with "after N days" since the date sent.
 - **US04-2 Manual statuses only.** The status selector offers Sent, In process, Interview, Offer and Rejected — never "No response" (R6).
-- **US04-3 Status change date.** The date field is pre-filled with today; the student only changes it if the reply came on another day. A future date or a date before the date sent is rejected (R6).
+- **US04-3 Status change date.** The date field is pre-filled with today; the student only changes it if the reply came on another day. A future date or a date before the date sent is rejected (R6). A date before the previous status change, or a change to the current status, is also rejected (R6).
 - **US04-4 Edit fields.** The student can edit any of the six fields, with the same validation as US02. Editing fields does not create a status change.
 - **US04-5 Delete.** When she chooses "Delete", a confirmation is required. On confirm, the application and its status history are deleted and she returns to the pipeline. On cancel, nothing changes.
 - **US04-6 60-day rule.** Given an application in "Sent" whose last change was on 1 Sep, when the pipeline loads on 15 Nov, then it is "No response" with a status change dated 31 Oct (R5).
@@ -162,7 +163,7 @@ _As a student, I want to be reminded when an application goes quiet, so that I k
 - **US05-3 14-day fallback.** Given a company without a statistic: last change 14 days ago → reminder; 13 days ago → no reminder.
 - **US05-4 Only Sent and In process.** Given an application in "Interview" with no change for 30 days → no reminder.
 - **US05-5 Follow-up done.** When the student clicks "Follow-up done", then the reminder disappears for this quiet period, the status does not change, and the event is recorded.
-- **US05-6 Dismiss.** When the student clicks "Dismiss", then the reminder disappears for this quiet period and the event is recorded.
+- **US05-6 Dismiss.** When the student clicks "Dismiss", then the reminder disappears for this quiet period and the event is recorded. If no reminder is showing for the application, "Follow-up done" and "Dismiss" return "Not found".
 - **US05-7 New quiet period.** Given a dismissed reminder, when the status changes to "In process" and the new threshold passes without another change, then a new reminder appears (R12).
 
 ### US06 — Company response time

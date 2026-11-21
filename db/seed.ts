@@ -12,6 +12,13 @@ import { displayCompanyName, normalizeCompanyName } from "../lib/rules/company-n
 import { db, pool } from "./client.ts";
 import * as s from "./schema.ts";
 import type { ApplicationStatus } from "./schema.ts";
+import {
+  CHANNELS,
+  JOB_TYPES,
+  SECTORS,
+  type Channel,
+  type JobType,
+} from "../lib/fixed-lists.ts";
 
 // ---------- Guards ----------
 
@@ -89,42 +96,7 @@ function median(values: number[]): number {
   return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
 }
 
-// ---------- Fixed lists (SPEC §5) ----------
-
-const SECTORS = [
-  "Consulting",
-  "Energy & Utilities",
-  "Finance & Banking",
-  "Industry & Manufacturing",
-  "Logistics & Supply Chain",
-  "Retail & Consumer Goods",
-  "Technology & Software",
-  "Telecom",
-  "Health",
-  "Public Sector",
-  "Other",
-] as const;
-
-const CHANNELS = [
-  "Company portal",
-  "LinkedIn Easy Apply",
-  "LinkedIn (external)",
-  "Referral",
-  "Career Fair",
-  "Job board",
-  "Spontaneous application",
-  "Other",
-] as const;
-type Channel = (typeof CHANNELS)[number];
-
-const JOB_TYPES = [
-  "Summer internship",
-  "Professional internship",
-  "Trainee programme",
-  "Full-time",
-  "Dissertation in a company",
-] as const;
-type JobType = (typeof JOB_TYPES)[number];
+// ---------- Fixed lists: lib/fixed-lists.ts (SPEC §5) ----------
 
 // Channel mix and how much each channel changes the chance of a reply.
 const CHANNEL_WEIGHTS: readonly (readonly [Channel, number])[] = [

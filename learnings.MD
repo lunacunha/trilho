@@ -92,3 +92,17 @@ Máquina de estados: a lista de estados de uma candidatura e as mudanças permit
 - variáveis do Better Auth
     - BETTER_AUTH_SECRET: uma chave secreta aleatória. Quando alguém faz login, o Better Auth entrega ao browser um “bilhete” (o cookie de sessão) assinado com esta chave. Em cada pedido seguinte, verifica a assinatura para saber que o bilhete é verdadeiro. Quem souber a chave consegue falsificar bilhetes e entrar como qualquer pessoa. Por isso é secreta e nunca vai para o Git.
     - BETTER_AUTH_URL: o endereço da app. O Better Auth usa-o para construir links (por exemplo, o link de verificação no email) e para confirmar que os pedidos vêm do sítio certo.
+
+
+fase 4: fazer testes a partir da spec 
+
+- objetivo: cada critério de aceitação e cada regra do SPEC passa a ter um teste com o seu ID, escrito antes do código que o implementa. No fim desta fase, os testes existem e falham pela razão certa. Na Fase 5, cada fatia fá-los passar.
+
+- Teste unitário: testa uma peça isolada, sem base de dados. As tuas regras são funções puras, por isso testam-se assim: “mediana 17 → ‘2–3 weeks’”. Correm em milissegundos.
+- Teste de integração: testa várias peças juntas, aqui os services contra a branch test do Neon. É mais lento, mas é o único que apanha erros como “a estudante B consegue ver a candidatura da A”.
+- Given/When/Then = Arrange/Act/Assert. Os cenários do SPEC já estão escritos na forma de um teste: preparar os dados, executar a ação e verificar o resultado.
+- TDD, red → green: escreve-se o teste primeiro e vê-se a falhar (vermelho), depois implementa-se até passar (verde). O ponto importante é falhar pela razão certa. Um teste que falha com “erro de sintaxe” ou “ficheiro não encontrado” não prova nada. Um teste que falha com “Not implemented” prova que está pronto e só espera pelo código. Por isso o agente vai criar as funções vazias (stubs) que só lançam esse erro.
+- Os testes definem a interface. Ao escrever getPipeline(user, today) num teste, estás a decidir como o service se vai chamar antes de ele existir. O plano do agente vai propor essas assinaturas, e convém revê-las.
+- Isolamento: cada teste de integração começa com a base de dados limpa e cria só os dados de que precisa (2 estudantes, 1 empresa...). Não usa o seed grande. Assim, quando um teste falha, sabes exatamente porquê.
+- Ligação ao resto
+    - Os testes leem o SPEC (os IDs e os exemplos numéricos), usam as tabelas da Fase 3 e são o critério de “feito” de cada fatia da Fase 5: uma fatia só está pronta quando os testes dela ficam verdes.

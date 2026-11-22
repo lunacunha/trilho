@@ -138,7 +138,7 @@ _As a student, I want to log an application in under 30 seconds, so that I don't
 _As a student, I want to see all my applications grouped by status, so that I know where each one stands._
 
 - **US03-1 Columns and counts.** Given a student with 3 Sent, 2 In process, 1 Interview, 1 Offer, 1 Rejected and 1 No response, when she opens the pipeline, then she sees the columns Sent (3), In process (2), Interview (1), Offer (1), Closed (2).
-- **US03-2 Card content.** Each card shows company, role and days since sent (R10). Cards in "Closed" also show whether they are "Rejected" or "No response".
+- **US03-2 Card content.** Each card shows company, role and days since sent (R10). Cards in "Closed" also show whether they are "Rejected" or "No response". Within each column, cards are ordered by date sent, newest first.
 - **US03-3 Only my applications.** Given another student has applications, then they never appear in this student's pipeline. Opening another student's application by URL shows "Not found" (the app does not reveal that it exists).
 - **US03-4 Empty pipeline.** Given a student with no applications, then the pipeline shows a short message and a "Log your first application" button.
 - **US03-5 60-day rule on load.** R5 is applied before the pipeline is shown.
@@ -216,7 +216,7 @@ Recorded for the metrics in `docs/product/mvp-scope.md`. Each event stores: name
 
 | Event | When | Properties |
 |---|---|---|
-| `application_form_opened` | The new application form is shown | `form_session_id` |
+| `application_form_opened` | The new application form is shown in the browser (not on server render or link prefetch) | `form_session_id` |
 | `application_created` | An application is saved | `application_id`, `form_session_id` |
 | `reminder_triggered` | A reminder is shown for the first time in a quiet period | `application_id`, `reason` (`company_median` or `fallback_14_days`), `threshold_days` |
 | `reminder_followup_done` | "Follow-up done" is clicked | `application_id` |
@@ -244,4 +244,4 @@ Recorded for the metrics in `docs/product/mvp-scope.md`. Each event stores: name
 ## 12. Open questions
 
 - `@up.pt` also admits students from other University of Porto faculties. Does the dashboard need a faculty filter? (Not in the MVP.)
-- Do verification emails sent through Gmail SMTP reach `@up.pt` inboxes, or land in spam? (To test in the authentication slice.)
+- ~~Do verification emails sent through Gmail SMTP reach `@up.pt` inboxes?~~ Tested on 21 Nov: delivered to the inbox.

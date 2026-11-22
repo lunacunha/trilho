@@ -87,6 +87,13 @@ describe("Application input (US02-2, US02-3, US02-7, SPEC §10)", () => {
     },
   );
 
+  it.each(["sector", "channel", "jobType", "dateSent"])(
+    "US02-2: %s sent empty by the form ('') → error on that field only",
+    (field) => {
+      expect(Object.keys(fieldErrors(parse({ [field]: "" })))).toEqual([field]);
+    },
+  );
+
   it.each(["company", "roleTitle"])("US02-2: %s with only spaces is treated as empty", (field) => {
     expect(fieldErrors(parse({ [field]: "   " }))[field]).toBeDefined();
   });

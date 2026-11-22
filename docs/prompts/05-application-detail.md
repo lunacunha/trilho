@@ -25,6 +25,9 @@ Read first: `CLAUDE.md`, `SPEC.md` (R6, US03-3, US04, §10), `docs/ARCHITECTURE.
 - No visual polish beyond clean defaults (Phase 7).
 - Do not touch the `production` database.
 
+## Decisions already made
+- Close the R5 race flagged in prompt 04: the guarded UPDATE in `getPipeline` must also check, in the same statement, that the application's last status change is still ≥ 60 days before today (e.g. `NOT EXISTS` a status change after the cutoff date). A status change saved at the same moment must never be overwritten. No extra round trip. Add an integration test for it.
+
 ## Done when
 - Passing: unit tests for R6 and status-change validation (US04-2, US04-3); integration tests `ownership.test.ts`, `status-change.test.ts` and the new R6 service tests. Other tests may still fail, but only with "Not implemented".
 - `npm run lint` and `npm run build` pass.

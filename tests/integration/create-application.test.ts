@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { createApplication } from "@/lib/services/applications";
+import { createApplication, recordFormOpened } from "@/lib/services/applications";
 import { suggestCompanies } from "@/lib/services/companies";
 import { AccessDeniedError } from "@/lib/services/errors";
 import type { ApplicationInput } from "@/lib/validation";
@@ -87,5 +87,45 @@ describe("US02 — Log an application", () => {
   it("SPEC §3: a career_service user cannot create applications", async () => {
     const careers = await createUser({ role: "career_service" });
     await expect(createApplication(careers, input(), { today: TODAY })).rejects.toThrow(AccessDeniedError);
+  });
+
+  it("SPEC §3: a career_service user cannot get company suggestions", async () => {
+    const careers = await createUser({ role: "career_service" });
+    await expect(suggestCompanies(careers, "lu")).rejects.toThrow(AccessDeniedError);
+  });
+
+  it("US02-4: '%' and '_' in the query are matched literally", async () => {
+    await createCompany("Lumen Energy");
+    expect(await suggestCompanies(ana, "%")).toEqual([]);
+    expect(await suggestCompanies(ana, "_")).toEqual([]);
+  });
+
+  it("US02-4: an empty query gives no suggestions", async () => {
+    await createCompany("Lumen Energy");
+    expect(await suggestCompanies(ana, "   ")).toEqual([]);
+  });
+
+  it("SPEC §9: application_created without a form session stores form_session_id null", async () => {
+    const { id } = await createApplication(ana, input(), { today: TODAY });
+    const [event] = await getEvents("application_created");
+    expect(event.properties).toEqual({ application_id: id, form_session_id: null });
+  });
+
+  it("SPEC §9: recordFormOpened records application_form_opened with form_session_id", async () => {
+    await recordFormOpened(ana, "11111111-1111-4111-8111-111111111111");
+    const events = await getEvents("application_form_opened");
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      userId: ana.id,
+      applicationId: null,
+      properties: { form_session_id: "11111111-1111-4111-8111-111111111111" },
+    });
+  });
+
+  it("SPEC §3: a career_service user cannot record application_form_opened", async () => {
+    const careers = await createUser({ role: "career_service" });
+    await expect(recordFormOpened(careers, "11111111-1111-4111-8111-111111111111")).rejects.toThrow(
+      AccessDeniedError,
+    );
   });
 });

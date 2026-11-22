@@ -1,7 +1,6 @@
 // Product events (SPEC §9). The only place that writes to product_event.
 import type { Database } from "../../db/client.ts";
-import type { ProductEventName } from "../../db/schema.ts";
-import { notImplemented } from "../not-implemented.ts";
+import { productEvent, type ProductEventName } from "../../db/schema.ts";
 
 export type EventName = ProductEventName;
 
@@ -15,5 +14,5 @@ export async function recordEvent(
   properties: Record<string, unknown>,
   applicationId?: string,
 ): Promise<void> {
-  return notImplemented(executor, userId, name, properties, applicationId);
+  await executor.insert(productEvent).values({ userId, name, properties, applicationId: applicationId ?? null });
 }

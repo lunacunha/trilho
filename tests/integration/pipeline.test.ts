@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { getPipeline } from "@/lib/services/applications";
+import { AccessDeniedError } from "@/lib/services/errors";
 import {
   createCompany,
   createUser,
@@ -83,6 +84,29 @@ describe("US03 / US04-6/7 / US05 — Pipeline", () => {
       offer: columns.offer.length,
       closed: columns.closed.length,
     }).toEqual({ sent: 3, in_process: 2, interview: 1, offer: 1, closed: 2 });
+  });
+
+  it("SPEC §3: a career_service user cannot load a pipeline", async () => {
+    const careers = await createUser({ role: "career_service" });
+    await expect(getPipeline(careers, TODAY)).rejects.toThrow(AccessDeniedError);
+  });
+
+  it("US04-6: In process with last change 60 days ago converts; Sent 59 days ago does not (R5)", async () => {
+    const inProcess = await insertApplication({
+      user: ana,
+      company: ferro,
+      dateSent: daysAgo(80),
+      then: [["in_process", daysAgo(60)]],
+    });
+    const recent = await insertApplication({ user: ana, company: ferro, dateSent: daysAgo(59) });
+    const { columns } = await getPipeline(ana, TODAY);
+    expect(columns.closed.map((c) => c.id)).toEqual([inProcess.id]);
+    expect(columns.sent.map((c) => c.id)).toEqual([recent.id]);
+    expect((await getStatusChanges(inProcess.id)).at(-1)).toMatchObject({
+      status: "no_response",
+      changedOn: TODAY,
+      isAutomatic: true,
+    });
   });
 
   it("US03-4: a student with no applications gets five empty columns", async () => {

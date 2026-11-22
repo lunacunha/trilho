@@ -2,7 +2,7 @@
 // context) as parameters because some checks depend on it.
 import { z } from "zod";
 import type { ApplicationStatus } from "../db/schema.ts";
-import type { Channel, JobType, ManualStatus, Sector } from "./fixed-lists.ts";
+import { CHANNELS, JOB_TYPES, SECTORS, type Channel, type JobType, type ManualStatus, type Sector } from "./fixed-lists.ts";
 import { notImplemented } from "./not-implemented.ts";
 import { isAllowedEmailDomain } from "./rules/email-domain.ts";
 
@@ -38,8 +38,28 @@ export type ApplicationInput = {
 
 /** US02-2/3/7, §10: required fields, trimmed 1–120 chars, fixed lists, date not in the future. */
 export function applicationInputSchema(today: string): z.ZodType<ApplicationInput, unknown> {
-  return notImplemented(today);
+  const text = (emptyMessage: string) =>
+    z
+      .string({ error: emptyMessage })
+      .trim()
+      .min(1, emptyMessage)
+      .max(120, "Use at most 120 characters");
+  return z.object({
+    company: text("Enter the company"),
+    roleTitle: text("Enter the role"),
+    sector: z.enum(SECTORS, { error: "Choose a sector" }),
+    channel: z.enum(CHANNELS, { error: "Choose a channel" }),
+    jobType: z.enum(JOB_TYPES, { error: "Choose a job type" }),
+    dateSent: z
+      .string({ error: "Enter the date sent" })
+      .min(1, "Enter the date sent")
+      .pipe(z.iso.date({ error: "Enter a valid date" }))
+      .refine((date) => date <= today, DATE_SENT_FUTURE_MESSAGE),
+  });
 }
+
+/** SPEC §9: the id generated when the new application form opens. */
+export const formSessionIdSchema = z.uuid();
 
 export type StatusChangeInput = { status: ManualStatus; changedOn: string };
 

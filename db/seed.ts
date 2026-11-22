@@ -1,16 +1,19 @@
 // Seed with FICTIONAL demo data. Every company, person and email here is made up.
 //
-// Run with `npm run db:seed` (uses .env.local → Neon branch `dev`).
+// Run with `npm run db:seed` (uses .env.local → Neon branch `dev`), or against another
+// database with `ENV_FILE=.env.prod.local npm run db:seed` (see docs/deploy.md).
 // - Deterministic: fixed-seed PRNG; dates are offsets from "today" (Europe/Lisbon).
-// - Re-runnable: deletes all Trilho data and the seeded users first.
+// - Re-runnable: deletes all Trilho data and the seeded users first, but refuses to run
+//   when the database has any account that is not a seed account (db/seed-guard.ts).
 // - Users are created through Better Auth (hashed passwords), then marked verified.
 
-import "./env.ts";
+import { printTarget } from "./env.ts";
 import { randomUUID } from "node:crypto";
 import { inArray, sql } from "drizzle-orm";
 import { auth } from "../lib/auth.ts";
 import { displayCompanyName, normalizeCompanyName } from "../lib/rules/company-name.ts";
 import { db, pool } from "./client.ts";
+import { assertOnlySeedUsers } from "./seed-guard.ts";
 import * as s from "./schema.ts";
 import type { ApplicationStatus } from "./schema.ts";
 import {
@@ -23,6 +26,7 @@ import {
 
 // ---------- Guards ----------
 
+printTarget("Seed", process.env.DATABASE_URL);
 if (process.env.NODE_ENV === "production") {
   console.error("Refusing to seed with NODE_ENV=production.");
   process.exit(1);
@@ -405,8 +409,6 @@ function thresholdFor(stat: CompanyStat): { days: number; reason: "company_media
 // ---------- Main ----------
 
 async function main() {
-  const host = new URL(process.env.DATABASE_URL!).host;
-  console.log(`Seeding database at host: ${host}`);
   console.log(`Today (Europe/Lisbon): ${TODAY}\n`);
 
   // 1. Plan everything in memory
@@ -431,8 +433,9 @@ async function main() {
   if (demoStatuses.size < 6) problems.push("demo account does not cover every status");
   if (problems.length) throw new Error(`Seed plan is inconsistent: ${problems.join("; ")}`);
 
-  // 3. Delete existing Trilho data and the seeded users
+  // 3. Refuse if any real (non-seed) account exists, then delete Trilho data and the seeded users
   const seededEmails = ALL_USERS.map((u) => u.email);
+  await assertOnlySeedUsers(db, seededEmails);
   await db.execute(
     sql`TRUNCATE TABLE product_event, reminder, status_change, application, company, sector, channel, job_type`,
   );

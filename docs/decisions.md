@@ -11,7 +11,7 @@ Short records of decisions that shape Trilho. Newest decisions at the bottom.
 | 005 | 13 Nov | **EU region (Frankfurt)** for database and functions | Low latency for users in Portugal; student personal data stays in the EU (GDPR) | US East (Neon default) |
 | 006 | 13 Nov | **Better Auth** inside the app | User tables live in our own schema with real foreign keys; no vendor lock-in | Supabase Auth, Neon Auth |
 | 007 | 13 Nov | **Gmail SMTP** for verification emails | Resend's free plan only sends to the account owner without a verified (paid) domain | Resend |
-| 008 | 13 Nov | **Production env vars set manually** in Vercel, Production only | Avoid copying local values to production; Preview will point to the `dev` branch later | Import `.env` file |
+| 008 | 13 Nov | **Production env vars set manually** in Vercel, Production only | Avoid copying local values to production. Preview deployments get no database variables and never point at production (updated 22 Nov; see `docs/deploy.md`) | Import `.env` file |
 | 009 | 15 Nov | **No `src/` directory** | Project was created without it; moving adds configuration changes with no benefit | Move `app/` into `src/` |
 | 010 | 15 Nov | **Registration with `@up.pt` / `@fe.up.pt` email + verification** (D1) | FEUP SSO is out of reach for the MVP; verification makes the domain restriction real | FEUP SSO, open registration |
 | 011 | 15 Nov | **Statistic requires ≥ 5 replied applications** (D2, R3) | Without a reply there is no response time; fixes an inconsistency in Assignment 1 | 5 applications of any kind |

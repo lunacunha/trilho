@@ -1,9 +1,9 @@
 // Prints product metrics M1–M7 + M4b (docs/product/metrics.md).
-// Run with `npm run metrics` (uses .env.local → Neon branch `dev`).
+// Run with `npm run metrics` (uses .env.local → Neon branch `dev`; ENV_FILE=<file> to target another).
 // Every query runs inside one READ ONLY transaction, which is rolled back at the end.
 // Queries return aggregates only: no ids, names or emails are printed.
 
-import "../db/env.ts";
+import { printTarget } from "../db/env.ts";
 import { readFileSync } from "node:fs";
 import { pool } from "../db/client.ts";
 import { parseMetricsSql } from "./metrics-sql.ts";
@@ -12,7 +12,7 @@ const SQL_FILE = new URL("../docs/product/metrics.sql", import.meta.url);
 
 async function main() {
   const queries = parseMetricsSql(readFileSync(SQL_FILE, "utf8"));
-  console.log(`Database host: ${new URL(process.env.DATABASE_URL!).host}`);
+  printTarget("Metrics", process.env.DATABASE_URL);
   console.log(`Run at: ${new Date().toISOString()} (read-only)\n`);
 
   const client = await pool.connect();

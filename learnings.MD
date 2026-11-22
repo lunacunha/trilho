@@ -119,3 +119,36 @@ fase 5
 - Green: cada fatia transforma em verdes os testes vermelhos da Fase 4. É a prova automática de que a fatia cumpre o SPEC.
 
 A ordem não é arbitrária: cada fatia usa o que a anterior construiu. Não há pipeline sem login, e não há lembretes sem pipeline.
+
+resumo fase 5
+
+Resumo da Fase 5: como os conceitos se ligam
+
+- Fatias verticais (US02 → US08). Cada fatia atravessou todas as camadas, da página até à base de dados, e terminou funcional e testada. Foi isso que te permitiu fazer commit a cada fatia sem deixar nada partido.
+- Os testes primeiro, depois o código. Na Fase 4 os testes ficaram vermelhos de propósito, e cada fatia pô-los verdes. A tabela de rastreabilidade liga cada história (USxx) a uma regra (Rx) e a um teste. Por isso sabes exatamente o que está feito: agora são 225 de 225.
+- Camadas com responsabilidades separadas:
+    - as páginas só mostram;
+    - as Server Actions recebem e validam com Zod;
+    - os serviços verificam quem pode fazer o quê;
+    - as regras puras calculam, recebendo “hoje” como parâmetro e por isso testáveis;
+    - só a camada db/ toca na base de dados.
+    Graças a isto, a regra R3 foi reutilizada no dashboard com uma linha.
+- Integridade dos dados:
+    - transações, operações idempotentes e UPDATE com guarda contra corridas (R5, R12);
+    - apagar em cascata, que transformou “apagar a conta” num único DELETE.
+    Decisões do modelo de dados (Fase 3) que pagaram aqui.
+- Privacidade desde o desenho. O consentimento filtra as estatísticas. Os limiares mínimos (R3, R8, decisão 041) impedem que um número identifique um estudante. A US08 cumpre os direitos RGPD (retirar o consentimento, apagar os dados). Nenhum email real é enviado nos testes.
+- Eventos de produto num só sítio (lib/services/events). Os dados para as métricas M1–M7 já estão a ser recolhidos, por isso a Fase 6 vai consultar o que a Fase 5 gravou.
+
+
+resumo fase 7- Resumo da Fase 6: como os conceitos se ligam
+
+- Hipótese → métrica → evento → query → decisão. Na Fase 1 definiste as hipóteses H1–H3 e as métricas. Na Fase 3 desenhaste as tabelas e os eventos que as alimentam. Na Fase 5 os serviços gravaram esses eventos. Agora as queries provam que a cadeia está completa, sem nenhum evento em falta.
+- Definições antes dos números. A maturidade das coortes, a janela dos dias 22–28 e o que conta como “atividade” foram decididos antes de ver resultados. Assim, os números não podem ser ajustados para parecerem bons.
+- Qualidade dos dados. O “form opened” gravado do lado do cliente (Fase 5) é o que torna a M1 e a M2 fiáveis. Um evento de prefetch teria inflacionado os formulários abertos.
+- Segurança e privacidade:
+    - transação READ ONLY;
+    - output só com agregados;
+    - contas apagadas saem das métricas, como exige o RGPD.
+- Honestidade analítica. Os dados do seed validam as queries, não as hipóteses. A M4b mostra o que vais medir, não o resultado
+

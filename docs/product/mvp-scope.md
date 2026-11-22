@@ -33,7 +33,8 @@ The MVP keeps the 8 Must stories (US01–US08), adjusted for the MVP context. Ev
 | US13 | Notes and job link per application | Personal convenience that is not tied to the core value or to any pilot hypothesis; cheap to add later (two optional fields). |
 | US14 | Import an existing spreadsheet | The MVP must first prove that students log applications manually. Import is the first candidate for the post-pilot iteration if activation is low: a cut today that becomes a data-driven decision tomorrow. |
 | US15 | Career Service manages lists and merges duplicate companies | Adds an admin workflow with significant complexity. In the MVP, fixed lists come from the seed and name normalisation (US02) handles the most common duplicates. |
-| US16 | Edit account name | Found during the US01 build. The name is not shown anywhere in the MVP, so a wrong name has no functional impact. Candidate for slice 08 if time allows. |
+| US16 | Edit account name | Found during the US01 build. The name is not shown anywhere in the MVP, so a wrong name has no functional impact. |
+| — | In-app product metrics page (M1–M7) | Found in Phase 6. Metrics are for the product team, not the Career Service, so a page would need a new access decision. Before the pilot there is no real data to look at; `npm run metrics` and `docs/product/metrics.md` cover the MVP. Candidate for the pilot (Phase 9). |
 | — | Won't (v1): company accounts and "replies to all" badge, recruiting calendar, alumni referral programme, email/LinkedIn integration, notifications, AI | Unchanged from Assignment 1: they need formal partnerships, several years of data, or are not needed for the core value. |
 
 ## 4. Changes from Assignment 1
@@ -67,14 +68,14 @@ The MVP keeps the 8 Must stories (US01–US08), adjusted for the MVP context. Ev
 ### H3 — Company-based reminders lead to follow-up
 - **Risk:** if reminders are ignored, Trilho does little more than a spreadsheet; the data never turns into action and the product's differentiator stops halfway.
 - **Hypothesis:** if a reminder appears when an application passes the company's typical response time, the student follows up.
-- **Metrics:** M4 (main), M5 (secondary).
+- **Metrics:** M4 (main), M5 (secondary), M4b (extra analysis).
 - **Data:** events `reminder_triggered` (with the reason: company statistic or 14-day rule), `reminder_followup_done`, `reminder_dismissed` (who, when, which application). "Ignored" is derived: a triggered reminder with no reaction.
 - **Target:** M4 ≥ 60%; M5 ≥ 40%. *Assumptions:* no benchmark; validated in the pilot.
 - **Decision:**
   - Many dismissals → reminders come too early → raise the threshold (e.g. use the upper end of the company's typical range).
   - Many ignored reminders → reminders are not visible or not convincing → change the card's emphasis or the message.
   - In both cases, confirm with 2–3 pilot conversations before changing.
-- **Extra analysis:** compare M4 for company-based reminders vs 14-day reminders — this tests whether company data beats a fixed deadline.
+- **Extra analysis (M4b):** M4 split by reminder reason — company-based reminders vs 14-day reminders. This tests whether company data beats a fixed deadline: if company-based reminders get a higher follow-up rate, the shared statistics are worth their privacy cost; if not, a simple 14-day rule would do.
 - **Limitation:** "Follow-up done" is self-reported; Trilho cannot verify that the email was sent.
 
 ## 6. Metrics
@@ -83,19 +84,29 @@ All targets are **assumptions** (no benchmark exists yet) and will be validated 
 
 | # | Metric | Formula | Data source | Hypothesis | Target (assumption) | Decision if missed |
 |---|---|---|---|---|---|---|
-| M1 | Median time to log an application | Median of (time of `application_created` − time of the matching `application_form_opened`), successful saves only | Events `application_form_opened`, `application_created` | H1 | < 30 s | Simplify the form |
-| M2 | Application form completion rate | Forms saved ÷ forms opened | Events `application_form_opened`, `application_created` | H1 | ≥ 80% | Simplify the form |
-| M3 | Consent rate at onboarding | Students who chose "share" on the consent screen ÷ students who answered the consent screen, per registration week | Users table (consent choice + date) | H2 | ≥ 60% | Below 40%: rewrite the consent screen |
+| M1 | Median time to log an application | Median of (time of `application_created` − time of the matching `application_form_opened`, matched by form session), successful saves only | Events `application_form_opened`, `application_created` | H1 | < 30 s | Simplify the form |
+| M2 | Application form completion rate | Form sessions saved ÷ form sessions opened | Events `application_form_opened`, `application_created` | H1 | ≥ 80% | Simplify the form |
+| M3 | Consent rate | Students whose current choice is "share" ÷ students who answered the consent screen; overall and per registration week | Users table (consent choice + date) | H2 | ≥ 60% | Below 40%: rewrite the consent screen |
 | M4 | Follow-up rate | Reminders marked "Follow-up done" ÷ (reminders marked "Follow-up done" + reminders dismissed) | Events `reminder_followup_done`, `reminder_dismissed` | H3 | ≥ 60% | Adjust threshold or message (see H3) |
+| M4b | Follow-up rate by reminder reason | M4, split into company-based reminders and 14-day reminders | Events `reminder_triggered` (reason), `reminder_followup_done`, `reminder_dismissed` | H3 | Company-based > 14-day | If not higher: company statistics add no value to reminders; consider the simple 14-day rule |
 | M5 | Reminder action rate | Reminders marked "Follow-up done" ÷ reminders triggered (each reminder counted once, not per page view) | Events `reminder_triggered`, `reminder_followup_done` | H3 | ≥ 40% | Adjust card emphasis or message |
-| M6 | Activation rate | Students with ≥ 3 applications logged in their first 7 days ÷ students with a verified email | Users table (verification date), applications table (creation date) | — | ≥ 50% | Interview non-activated students; if the barrier is logging past applications, prioritise US14 (import) |
-| M7 | Week-4 retention | Activated students who created or updated ≥ 1 application in days 22–28 after registration ÷ activated students | Applications table (creation date), status history (change dates) | — | ≥ 40% | Investigate whether reminders and company statistics give students a reason to come back |
+| M6 | Activation rate | Students with ≥ 3 applications created within 7 days of registration ÷ verified students who registered at least 7 days ago | Users table (registration and verification dates), applications table (creation date) | — | ≥ 50% | Interview non-activated students; if the barrier is logging past applications, prioritise US14 (import) |
+| M7 | Week-4 retention | Activated students with ≥ 1 activity in days 22–28 after registration ÷ activated students who registered at least 28 days ago | Applications table (creation date), status history (change dates) | — | ≥ 40% | Investigate whether reminders and company statistics give students a reason to come back |
 
 **Definitions**
+- **Who is counted:** only `student` accounts. Career Service accounts are never counted.
+- **Form session:** each opening of the new-application form has its own id; M1 and M2 match events by this id. Events without a form session id are excluded.
 - **Why 3 applications for activation:** one application may be a test; three show the student is using Trilho for real. *(Assumption.)*
 - **Why "verified email" in M6:** a student without a verified email cannot log in, so they never had the chance to activate.
+- **Cohort maturity (M6, M7):** a student only enters the denominator once they have had the full window. Someone who registered 2 days ago has not had 7 days to activate, and counting them would make the rate look artificially low.
+- **Activity (M7):** creating an application or making a manual status change, the same as "active student" in the dashboard (R9). The automatic "No response" change does not count; field edits have no timestamp and do not count.
+- **Days 22–28:** from registration + 21 days up to registration + 28 days.
 - **Why "activated" in M7:** separates "did not start" (M6) from "did not continue" (M7).
-- **Limitation of M7:** a student who receives an offer and stops using Trilho counts as not retained, although this is the product working. These cases will be reported separately.
+
+**Limitations**
+- **M3:** the users table keeps only the current consent choice. A student who changed their choice after onboarding is counted with the new choice. In the pilot, changes are expected to be rare; if needed, a `consent_changed` event would keep the full history.
+- **M7:** a student who receives an offer and stops using Trilho counts as not retained, although this is the product working. These cases will be reported separately.
+- **Deleted accounts (all metrics):** when a student deletes their account (US08), all their data, including product events, is deleted. Metrics only cover existing accounts. This is required by GDPR and accepted.
 
 **Data to record (input for Phase 3)**
 - Events: `application_form_opened`, `application_created`, `reminder_triggered` (with reason), `reminder_followup_done`, `reminder_dismissed`.
@@ -104,7 +115,7 @@ All targets are **assumptions** (no benchmark exists yet) and will be validated 
 ## 7. Open questions
 
 - `@up.pt` also admits students from other University of Porto faculties. Does the Career Service dashboard need to filter by faculty?
-- How is an "active student" defined in the Career Service dashboard? (Proposal: created or updated ≥ 1 application in the last 30 days.)
-- What exactly is a "first response"? (To be defined in SPEC.md: likely the first status change from "Sent" to any status except the automatic "No response".)
-- Which point of the company's typical range triggers a reminder: the lower end, the median or the upper end? (To be defined in SPEC.md.)
+- ~~How is an "active student" defined in the Career Service dashboard?~~ Answered in SPEC.md R9: at least one application created or manual status change in the last 30 days (today and the 29 previous days).
+- ~~What exactly is a "first response"?~~ Answered in SPEC.md R1.
+- ~~Which point of the company's typical range triggers a reminder?~~ Answered in SPEC.md R4: the company median, rounded up; 14 days without a statistic.
 - Will verification emails sent through Gmail SMTP reach `@up.pt` inboxes, or land in spam? (Technical risk, to test in the authentication slice.) : Tested on 21 Nov: delivered to the inbox.

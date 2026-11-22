@@ -35,7 +35,7 @@ async function PrivacyContent() {
         </h2>
         <p className="mb-4">
           <span className="font-medium">{sharing ? "Sharing anonymously" : "Not sharing"}</span>
-          {updatedAt && <span className="text-zinc-700"> · since {formatDisplayDate(lisbonToday(updatedAt))}</span>}
+          {updatedAt && <span className="text-fg-muted"> · since {formatDisplayDate(lisbonToday(updatedAt))}</span>}
         </p>
         <ConsentToggle sharing={sharing} />
       </section>
@@ -44,7 +44,7 @@ async function PrivacyContent() {
         <h2 id="delete-heading" className="mb-2 text-lg font-semibold">
           Delete my account
         </h2>
-        <p className="mb-4 text-sm text-zinc-700">Removes your account and all your data from Trilho.</p>
+        <p className="mb-4 text-sm text-fg-muted">Removes your account and all your data from Trilho.</p>
         <DeleteAccount />
       </section>
     </>

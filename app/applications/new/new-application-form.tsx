@@ -27,7 +27,7 @@ export function NewApplicationForm({ today, formSessionId }: Props) {
       <input type="hidden" name="form_session_id" value={formSessionId} />
       <ApplicationFields today={today} values={state.values} errors={state.fieldErrors} />
       {state.message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}

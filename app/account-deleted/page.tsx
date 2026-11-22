@@ -9,7 +9,7 @@ export default function AccountDeletedPage() {
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-10">
       <h1 className="mb-4 text-2xl font-semibold">Your account and data were deleted</h1>
-      <p className="mb-6 text-zinc-700">
+      <p className="mb-6 text-fg-muted">
         Your applications, their history, your reminder reactions and your usage events are gone.
       </p>
       <p className="flex flex-wrap gap-4">

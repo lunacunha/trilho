@@ -23,7 +23,7 @@ async function ConsentGate() {
   if (!user || user.role !== "student" || user.consent !== null) redirect(homePathFor(user));
   return (
     <>
-      <p className="mb-6 text-zinc-700">
+      <p className="mb-6 text-fg-muted">
         Trilho shows students how long companies take to reply, using anonymous data from students who agree to
         share. Your name and individual applications are never shown to anyone.
       </p>

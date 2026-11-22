@@ -31,7 +31,7 @@ async function VerifyEmailContent({ searchParams }: Pick<PageProps<"/verify-emai
       <h1 className="mb-4 text-2xl font-semibold">
         {linkFailed ? "This verification link is invalid or has expired" : "Check your inbox to verify your email"}
       </h1>
-      <p className="mb-6 text-zinc-700">
+      <p className="mb-6 text-fg-muted">
         {linkFailed
           ? "Enter your university email to get a new link."
           : "We sent you a link. Open it to verify your email, then you can start using Trilho. Didn't get it? Check your spam folder or send it again."}

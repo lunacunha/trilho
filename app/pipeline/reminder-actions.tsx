@@ -11,15 +11,15 @@ type Props = {
 };
 
 const buttonClass =
-  "rounded border border-zinc-500 bg-white px-2 py-1 text-sm font-medium hover:bg-zinc-100 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600 disabled:opacity-60";
+  "rounded-full border border-border bg-surface-raised px-3 py-1 text-sm font-medium text-fg hover:bg-secondary focus:outline-2 focus:outline-offset-2 focus:outline-focus disabled:opacity-60";
 
 /** US05-1/5/6: "N days · Follow up?" with "Follow-up done" and "Dismiss". */
 export function ReminderActions({ daysQuiet, context, action }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
-    <form action={formAction} className="mt-2 border-t border-zinc-200 pt-2">
-      <p className="text-sm font-medium text-amber-900">
+    <form action={formAction} className="mt-2 border-t border-border-subtle pt-2">
+      <p className="text-sm font-medium text-reminder-fg">
         {daysQuiet} {daysQuiet === 1 ? "day" : "days"} · Follow up?
       </p>
       <div className="mt-1 flex flex-wrap gap-2">
@@ -44,7 +44,7 @@ export function ReminderActions({ daysQuiet, context, action }: Props) {
           Dismiss
         </button>
       </div>
-      <p aria-live="polite" className="mt-1 text-sm text-red-700">
+      <p aria-live="polite" className="mt-1 text-sm text-danger">
         {state.message}
       </p>
     </form>

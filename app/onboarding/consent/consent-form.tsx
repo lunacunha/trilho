@@ -29,23 +29,23 @@ export function ConsentForm() {
         {OPTIONS.map((o) => (
           <label
             key={o.value}
-            className="flex cursor-pointer gap-3 rounded border border-zinc-300 p-3 has-[:checked]:border-blue-700 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-blue-600"
+            className="flex cursor-pointer gap-3 rounded border border-border-subtle p-3 has-[:checked]:border-primary has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus"
           >
             {/* No defaultChecked: neither option is pre-selected (US01-4) */}
             <input type="radio" name="consent" value={o.value} required className="mt-1" />
             <span>
               <span className="block font-medium">{o.label}</span>
-              <span className="block text-sm text-zinc-700">{o.description}</span>
+              <span className="block text-sm text-fg-muted">{o.description}</span>
             </span>
           </label>
         ))}
       </fieldset>
       {state.error && (
-        <p id="consent-error" role="alert" className="text-sm text-red-700">
+        <p id="consent-error" role="alert" className="text-sm text-danger">
           {state.error}
         </p>
       )}
-      <p className="text-sm text-zinc-700">You can change this later in Privacy settings.</p>
+      <p className="text-sm text-fg-muted">You can change this later in Privacy settings.</p>
       <button type="submit" className={buttonClass} disabled={pending}>
         {pending ? "Saving…" : "Continue"}
       </button>

@@ -31,7 +31,7 @@ export function RegisterForm() {
         hint="At least 8 characters"
       />
       {state.message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}

@@ -46,16 +46,16 @@ async function CompanyContent({ params }: Props) {
   return (
     <>
       <h1 className="mb-6 text-2xl font-semibold">{page.name}</h1>
-      <section aria-labelledby="response-time" className="rounded border border-zinc-300 p-4">
+      <section aria-labelledby="response-time" className="rounded-lg bg-surface-muted p-4">
         <h2 id="response-time" className="sr-only">
           Response time
         </h2>
         {page.statistic ? (
           <>
             <p className="text-lg">
-              Typical response time: <strong>{page.statistic.label}</strong>
+              Typical response time: <strong className="font-serif text-2xl text-accent">{page.statistic.label}</strong>
             </p>
-            <p className="mt-1 text-sm text-zinc-700">
+            <p className="mt-1 text-sm text-fg-muted">
               Median-based range · based on {page.statistic.basedOn} student applications
             </p>
           </>

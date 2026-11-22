@@ -1,31 +1,30 @@
-// SPEC §11 (accessibility, WCAG AA) and docs/ux-review.md: the colour pairs the UI uses
-// must keep their contrast. Colours are read from Tailwind's own theme (oklch), so a
-// Tailwind upgrade that shifts a shade is caught here.
-import { readFileSync } from "node:fs";
+// SPEC §11 (accessibility, WCAG AA), decision 047 and docs/ux-review.md "Visual design":
+// every colour pair the UI uses must keep its contrast in BOTH the light and the dark theme.
+// Colours are read from the design tokens in app/globals.css, so changing a token re-checks it here.
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const theme = readFileSync("node_modules/tailwindcss/theme.css", "utf8");
 const globals = readFileSync("app/globals.css", "utf8");
 
 type Rgb = [number, number, number]; // linear sRGB, 0–1
+type Tokens = Record<string, string>;
 
-/** Linear sRGB of a Tailwind colour token, e.g. "zinc-600". */
-function tw(token: string): Rgb {
-  const match = theme.match(new RegExp(`--color-${token}:\\s*oklch\\(([\\d.]+)% ([\\d.]+) ([\\d.]+)\\)`));
-  if (!match) throw new Error(`Colour token not found: ${token}`);
-  const [L, C, h] = [Number(match[1]) / 100, Number(match[2]), (Number(match[3]) * Math.PI) / 180];
-  const a = C * Math.cos(h);
-  const b = C * Math.sin(h);
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const clamp = (v: number) => Math.min(1, Math.max(0, v));
-  return [
-    clamp(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
-    clamp(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
-    clamp(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
-  ];
+/** The body of the first CSS block whose selector matches `selector`. */
+function block(selector: RegExp): string {
+  const match = globals.match(new RegExp(`${selector.source}\\s*\\{([^}]*)\\}`));
+  if (!match) throw new Error(`Block not found: ${selector}`);
+  return match[1];
 }
+
+function tokens(body: string): Tokens {
+  return Object.fromEntries([...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})\s*;/gi)].map((m) => [m[1], m[2].toLowerCase()]));
+}
+
+const LIGHT_BLOCK = block(/:root,\s*:root\[data-theme="light"\]/);
+const DARK_BLOCK = block(/:root\[data-theme="dark"\]/);
+const FALLBACK_BLOCK = block(/:root:not\(\[data-theme\]\)/);
+const THEMES: Record<"light" | "dark", Tokens> = { light: tokens(LIGHT_BLOCK), dark: tokens(DARK_BLOCK) };
 
 /** Linear sRGB of a hex colour, e.g. "#171717". */
 function hex(value: string): Rgb {
@@ -38,67 +37,122 @@ function hex(value: string): Rgb {
 
 const luminance = ([r, g, b]: Rgb) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-function ratio(fg: Rgb, bg: Rgb): number {
-  const [hi, lo] = [luminance(fg), luminance(bg)].sort((x, y) => y - x);
+function ratio(fg: string, bg: string): number {
+  const [hi, lo] = [luminance(hex(fg)), luminance(hex(bg))].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
 
-const WHITE = hex("#ffffff");
-const FOREGROUND = hex("#171717");
 const TEXT = 4.5; // WCAG 1.4.3, normal text
 const NON_TEXT = 3; // WCAG 1.4.11, UI component boundaries and focus indicators
 
-describe("SPEC §11 — Light theme only (decision 046)", () => {
-  it("SPEC §11: globals.css has no dark-mode block", () => {
-    expect(globals).not.toMatch(/prefers-color-scheme:\s*dark/);
+const PAGE_SURFACES = ["surface", "surface-raised", "surface-muted", "surface-header"];
+
+/** [foreground, background] pairs that appear in the UI, with the minimum ratio. */
+const TEXT_PAIRS: [string, string][] = [
+  // Body text, secondary text, titles, links and labels on every page surface
+  ...["fg", "fg-muted", "brand", "primary", "primary-hover", "accent", "danger", "success"].flatMap((fg) =>
+    PAGE_SURFACES.map((bg): [string, string] => [fg, bg]),
+  ),
+  // Buttons
+  ["on-primary", "primary"],
+  ["on-primary", "primary-hover"],
+  ["on-danger", "danger"],
+  ["on-danger", "danger-hover"],
+  ["fg", "secondary"],
+  ["fg", "secondary-hover"],
+  // Reminder card (rose): its text, the reminder buttons and their error message
+  ["reminder-fg", "reminder-bg"],
+  ["fg", "reminder-bg"],
+  ["danger", "reminder-bg"],
+  // Delete-account panel
+  ["fg", "danger-bg"],
+  ["danger", "danger-bg"],
+  // Theme toggle (inactive option) and nav hover
+  ["fg-muted", "surface-header"],
+  ["fg", "surface-muted"],
+  // Dashboard chart axis labels
+  ["chart-text", "surface"],
+];
+
+const NON_TEXT_PAIRS: [string, string][] = [
+  // Control boundaries (inputs, secondary buttons, theme toggle) and focus outlines
+  ...["border", "focus"].flatMap((fg) =>
+    [...PAGE_SURFACES, "secondary", "reminder-bg"].map((bg): [string, string] => [fg, bg]),
+  ),
+  ["danger", "surface"], // destructive focus outline and delete-account panel edge
+  ["danger", "danger-bg"],
+  ["primary", "surface-raised"], // pipeline card hover/focus-within border
+  ["chart-bar", "surface"], // dashboard bars
+];
+
+describe("SPEC §11 — Light and dark themes (decision 047)", () => {
+  it("SPEC §11: both themes define the same token set", () => {
+    expect(Object.keys(THEMES.light).length).toBeGreaterThan(20);
+    expect(Object.keys(THEMES.dark).sort()).toEqual(Object.keys(THEMES.light).sort());
   });
 
-  it("SPEC §11: globals.css sets color-scheme: light so native controls render light", () => {
-    expect(globals).toMatch(/color-scheme:\s*light/);
+  it("SPEC §11: the no-JavaScript system fallback uses exactly the dark tokens", () => {
+    expect(tokens(FALLBACK_BLOCK)).toEqual(THEMES.dark);
   });
 
-  it("SPEC §11: body text #171717 on white ≥ 4.5:1", () => {
-    expect(globals).toMatch(/--foreground:\s*#171717/);
-    expect(globals).toMatch(/--background:\s*#ffffff/);
-    expect(ratio(FOREGROUND, WHITE)).toBeGreaterThanOrEqual(TEXT);
+  it("SPEC §11: each theme sets color-scheme so native controls match it", () => {
+    expect(LIGHT_BLOCK).toMatch(/color-scheme:\s*light/);
+    expect(DARK_BLOCK).toMatch(/color-scheme:\s*dark/);
+    expect(FALLBACK_BLOCK).toMatch(/color-scheme:\s*dark/);
+  });
+
+  it("SPEC §11: every token used in a contrast pair exists", () => {
+    for (const [fg, bg] of [...TEXT_PAIRS, ...NON_TEXT_PAIRS]) {
+      expect(THEMES.light, fg).toHaveProperty(fg);
+      expect(THEMES.light, bg).toHaveProperty(bg);
+    }
   });
 });
 
-describe("SPEC §11 / WCAG 1.4.3 — Text colours", () => {
-  const backgrounds = { white: WHITE, "zinc-100": tw("zinc-100"), "red-50": tw("red-50") };
-  const text = ["zinc-900", "zinc-700", "zinc-600", "blue-700", "red-700", "red-800", "green-800", "amber-900"];
-
-  for (const token of text) {
-    for (const [bgName, bg] of Object.entries(backgrounds)) {
-      it(`WCAG 1.4.3: ${token} text on ${bgName} ≥ 4.5:1`, () => {
-        expect(ratio(tw(token), bg)).toBeGreaterThanOrEqual(TEXT);
+for (const [theme, t] of Object.entries(THEMES)) {
+  describe(`SPEC §11 / WCAG 1.4.3 — Text colours (${theme})`, () => {
+    for (const [fg, bg] of TEXT_PAIRS) {
+      it(`WCAG 1.4.3: ${theme} ${fg} on ${bg} ≥ 4.5:1`, () => {
+        expect(ratio(t[fg], t[bg])).toBeGreaterThanOrEqual(TEXT);
       });
     }
-  }
-
-  it("WCAG 1.4.3: placeholder zinc-600 on the white input ≥ 4.5:1", () => {
-    expect(ratio(tw("zinc-600"), WHITE)).toBeGreaterThanOrEqual(TEXT);
   });
 
-  for (const button of ["blue-700", "blue-800", "red-700", "red-800"]) {
-    it(`WCAG 1.4.3: white button text on ${button} ≥ 4.5:1`, () => {
-      expect(ratio(WHITE, tw(button))).toBeGreaterThanOrEqual(TEXT);
-    });
-  }
+  describe(`SPEC §11 / WCAG 1.4.11 — Control borders, focus and chart (${theme})`, () => {
+    for (const [fg, bg] of NON_TEXT_PAIRS) {
+      it(`WCAG 1.4.11: ${theme} ${fg} on ${bg} ≥ 3:1`, () => {
+        expect(ratio(t[fg], t[bg])).toBeGreaterThanOrEqual(NON_TEXT);
+      });
+    }
+  });
+}
+
+describe("SPEC §11 — Mockup colours adjusted for AA (docs/ux-review.md)", () => {
+  it("WCAG 1.4.3: the mockup sage #598776 fails with white text (why primary was darkened)", () => {
+    expect(ratio("#ffffff", "#598776")).toBeLessThan(TEXT);
+  });
+
+  it("WCAG 1.4.11: the mockup input border #e1dad2 fails on white (why it is decorative only)", () => {
+    expect(ratio("#e1dad2", "#ffffff")).toBeLessThan(NON_TEXT);
+  });
+
+  it("WCAG 1.4.3: the muted grey fails on the rose reminder card (why reminder cards use fg)", () => {
+    expect(ratio(THEMES.light["fg-muted"], THEMES.light["reminder-bg"])).toBeLessThan(TEXT);
+  });
 });
 
-describe("SPEC §11 / WCAG 1.4.11 — Control borders and focus", () => {
-  it("WCAG 1.4.11: zinc-500 control border on white ≥ 3:1", () => {
-    expect(ratio(tw("zinc-500"), WHITE)).toBeGreaterThanOrEqual(NON_TEXT);
-  });
-
-  it("WCAG 1.4.11: the old zinc-400 border fails (why it was replaced)", () => {
-    expect(ratio(tw("zinc-400"), WHITE)).toBeLessThan(NON_TEXT);
-  });
-
-  for (const focus of ["blue-600", "red-600", "red-700"]) {
-    it(`WCAG 1.4.11: ${focus} focus outline on white ≥ 3:1`, () => {
-      expect(ratio(tw(focus), WHITE)).toBeGreaterThanOrEqual(NON_TEXT);
+describe("SPEC §11 — Components use only the semantic tokens", () => {
+  function sourceFiles(dir: string): string[] {
+    return readdirSync(dir).flatMap((name) => {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) return sourceFiles(path);
+      return /\.tsx?$/.test(name) ? [path] : [];
     });
   }
+
+  it("SPEC §11: no raw Tailwind palette colours in app/ or components/", () => {
+    const raw = /\b(?:bg|text|border|outline|ring|fill|stroke|placeholder:text)-(?:zinc|gray|slate|neutral|stone|blue|red|green|amber|yellow|emerald|rose|sky|indigo)-\d{2,3}\b|\b(?:bg|text)-(?:white|black)\b/;
+    const offenders = [...sourceFiles("app"), ...sourceFiles("components")].filter((f) => raw.test(readFileSync(f, "utf8")));
+    expect(offenders).toEqual([]);
+  });
 });

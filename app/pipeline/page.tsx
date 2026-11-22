@@ -50,8 +50,8 @@ async function PipelineContent() {
       </div>
 
       {total === 0 ? (
-        <section className="rounded border border-zinc-300 p-6 text-center">
-          <p className="mb-4 text-zinc-700">You have not logged any applications yet.</p>
+        <section className="rounded-lg bg-surface-muted p-6 text-center">
+          <p className="mb-4 text-fg-muted">You have not logged any applications yet.</p>
           <Link href="/applications/new" className={buttonClass}>
             Log your first application
           </Link>
@@ -59,8 +59,8 @@ async function PipelineContent() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {PIPELINE_COLUMNS.map((column) => (
-            <section key={column} aria-labelledby={`column-${column}`} className="rounded bg-zinc-100 p-3">
-              <h2 id={`column-${column}`} className="mb-3 font-semibold">
+            <section key={column} aria-labelledby={`column-${column}`} className="rounded-lg bg-surface-muted p-3">
+              <h2 id={`column-${column}`} className="mb-3 font-semibold text-accent">
                 {COLUMN_LABELS[column]} ({columns[column].length})
               </h2>
               {columns[column].length > 0 && (
@@ -81,20 +81,26 @@ async function PipelineContent() {
 }
 
 function ApplicationCard({ card }: { card: PipelineCard }) {
-  // A div, not a link: the reminder buttons cannot sit inside a link
+  // A div, not a link: the reminder buttons cannot sit inside a link.
+  // On the rose reminder card, secondary lines use the main text colour (muted grey fails AA there).
+  const muted = card.reminder ? "text-fg" : "text-fg-muted";
   return (
-    <div className="rounded border border-zinc-300 bg-white p-3 focus-within:border-blue-700 hover:border-blue-700">
+    <div
+      className={`rounded-lg border p-3 shadow-sm focus-within:border-primary hover:border-primary ${
+        card.reminder ? "border-reminder-bg bg-reminder-bg" : "border-border-subtle bg-surface-raised"
+      }`}
+    >
       <Link
         href={`/applications/${card.id}`}
-        className="block rounded focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
+        className="block rounded focus:outline-2 focus:outline-offset-2 focus:outline-focus"
       >
-        <p className="font-medium">{card.companyName}</p>
-        <p className="text-sm text-zinc-700">{card.roleTitle}</p>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="font-semibold">{card.companyName}</p>
+        <p className={`text-sm ${muted}`}>{card.roleTitle}</p>
+        <p className={`mt-1 text-sm ${muted}`}>
           {card.daysSinceSent} {card.daysSinceSent === 1 ? "day" : "days"}
         </p>
-        {card.status === "rejected" && <p className="mt-1 text-sm font-medium text-red-800">Rejected</p>}
-        {card.status === "no_response" && <p className="mt-1 text-sm font-medium text-zinc-700">No response</p>}
+        {card.status === "rejected" && <p className="mt-1 text-sm font-medium text-danger">Rejected</p>}
+        {card.status === "no_response" && <p className={`mt-1 text-sm font-medium ${muted}`}>No response</p>}
       </Link>
       {card.reminder && (
         <ReminderActions

@@ -14,7 +14,7 @@ export function LoginForm() {
       <FormField id="email" label="University email" type="email" autoComplete="email" placeholder="up20XXXXXXX@up.pt" defaultValue={state.email} />
       <FormField id="password" label="Password" type="password" autoComplete="current-password" />
       {state.message && (
-        <div role="alert" className="text-sm text-red-700">
+        <div role="alert" className="text-sm text-danger">
           <p>{state.message}</p>
           {state.unverifiedEmail && (
             <p className="mt-1">

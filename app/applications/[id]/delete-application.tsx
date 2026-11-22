@@ -1,14 +1,10 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { dangerButtonClass, secondaryButtonClass } from "@/components/form-field";
 import type { DeleteApplicationState } from "./actions";
 
 type Props = { action: () => Promise<DeleteApplicationState> };
-
-const dangerClass =
-  "rounded bg-red-700 px-4 py-2 font-medium text-white hover:bg-red-800 focus:outline-2 focus:outline-offset-2 focus:outline-red-600 disabled:opacity-60";
-const secondaryClass =
-  "rounded border border-zinc-500 bg-white px-4 py-2 font-medium hover:bg-zinc-100 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600";
 
 /** US04-5: "Delete" asks for confirmation; Cancel changes nothing. */
 export function DeleteApplication({ action }: Props) {
@@ -27,7 +23,7 @@ export function DeleteApplication({ action }: Props) {
 
   if (!confirming) {
     return (
-      <button ref={deleteRef} type="button" className={dangerClass} onClick={() => setConfirming(true)}>
+      <button ref={deleteRef} type="button" className={dangerButtonClass} onClick={() => setConfirming(true)}>
         Delete application
       </button>
     );
@@ -39,15 +35,15 @@ export function DeleteApplication({ action }: Props) {
         Delete this application and its history? This cannot be undone.
       </p>
       {state.message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className={dangerClass} disabled={pending}>
+        <button type="submit" className={dangerButtonClass} disabled={pending}>
           {pending ? "Deleting…" : "Yes, delete"}
         </button>
-        <button ref={cancelRef} type="button" className={secondaryClass} onClick={() => setConfirming(false)}>
+        <button ref={cancelRef} type="button" className={secondaryButtonClass} onClick={() => setConfirming(false)}>
           Cancel
         </button>
       </div>

@@ -65,15 +65,15 @@ async function ApplicationContent({ params }: Props) {
           </Link>
         </p>
         <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-zinc-600">Status</dt>
+          <dt className="text-fg-muted">Status</dt>
           <dd className="font-medium">{STATUS_LABELS[detail.currentStatus]}</dd>
-          <dt className="text-zinc-600">Sector</dt>
+          <dt className="text-fg-muted">Sector</dt>
           <dd>{detail.sector}</dd>
-          <dt className="text-zinc-600">Channel</dt>
+          <dt className="text-fg-muted">Channel</dt>
           <dd>{detail.channel}</dd>
-          <dt className="text-zinc-600">Job type</dt>
+          <dt className="text-fg-muted">Job type</dt>
           <dd>{detail.jobType}</dd>
-          <dt className="text-zinc-600">Date sent</dt>
+          <dt className="text-fg-muted">Date sent</dt>
           <dd>{formatDisplayDate(detail.dateSent)}</dd>
         </dl>
       </header>
@@ -95,12 +95,12 @@ async function ApplicationContent({ params }: Props) {
         </h2>
         <ol className="flex flex-col gap-2">
           {detail.history.map((entry, i) => (
-            <li key={i} className="rounded border border-zinc-300 p-3">
+            <li key={i} className="rounded border border-border-subtle p-3">
               <p className="font-medium">
                 {STATUS_LABELS[entry.status]}
-                {entry.isAutomatic && <span className="ml-2 text-sm font-normal text-zinc-600">(automatic)</span>}
+                {entry.isAutomatic && <span className="ml-2 text-sm font-normal text-fg-muted">(automatic)</span>}
               </p>
-              <p className="text-sm text-zinc-700">
+              <p className="text-sm text-fg-muted">
                 {formatDisplayDate(entry.changedOn)} · after {entry.daysAfterSent}{" "}
                 {entry.daysAfterSent === 1 ? "day" : "days"}
               </p>

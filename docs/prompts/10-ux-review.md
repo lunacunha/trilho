@@ -45,6 +45,8 @@ Fix the low-contrast problem across the app, run a heuristic review and a cognit
    - how the results map to H1–H3.
    Do not invent results.
 
+
+
 ## Rules
 - Tests must stay green (`npm test`), plus lint and build. Do not change test expectations to make tests pass.
 - Do not run db:seed, sign-ups or deletions on dev. Do not send emails.

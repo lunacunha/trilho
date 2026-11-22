@@ -10,8 +10,8 @@ export function ResendForm({ email }: { email: string }) {
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       <FormField id="email" label="University email" type="email" autoComplete="email" placeholder="up20XXXXXXX@up.pt" defaultValue={state.email} />
       <div aria-live="polite" className="text-sm">
-        {state.message && <p className="text-green-800">{state.message}</p>}
-        {state.error && <p className="text-red-700">{state.error}</p>}
+        {state.message && <p className="text-success">{state.message}</p>}
+        {state.error && <p className="text-danger">{state.error}</p>}
       </div>
       <button type="submit" className={buttonClass} disabled={pending}>
         {pending ? "Sending…" : "Resend verification email"}

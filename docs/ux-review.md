@@ -16,6 +16,8 @@ Nielsen heuristics: H1 visibility of system status · H2 match with the real wor
 
 ## 2. Summary
 
+> **Update (prompt 11):** decision 046 (light theme only) was later replaced by decision 047: light and dark themes built on design tokens, both checked for WCAG AA (see §9). Prompt 11 also resolved findings #13, #20 and #22. The table below records the state after prompt 10.
+
 | Severity | Findings | Fixed | Backlog |
 |---|---|---|---|
 | 4 — catastrophe | 2 | 2 | 0 |
@@ -24,6 +26,8 @@ Nielsen heuristics: H1 visibility of system status · H2 match with the real wor
 | 1 — cosmetic | 7 | 0 | 7 |
 | 0 — not a problem | 1 | 0 | 1 |
 | **Total** | **22** | **7** | **15** |
+
+After prompt 11: **10 fixed, 12 in the backlog** (#13, #20 and #22 resolved).
 
 **What was fixed:**
 - **Unreadable text in dark mode (#1, #2).** The create-next-app CSS switched the page to light text on a dark background whenever the OS was in dark mode. The cards, columns and inputs kept their white backgrounds, so their text was nearly invisible (1.06–1.17:1). Grey text, links and success messages on the black page also fell below AA (1.89–2.90:1). Fix: Trilho is light-only in the MVP (decision 046). The dark-mode block is removed and `color-scheme: light` is set. Files: `app/globals.css`.
@@ -50,18 +54,20 @@ Nielsen heuristics: H1 visibility of system status · H2 match with the real wor
 | 10 | Pipeline (T2) | The reminder does not say why it appeared (company's typical time vs the 14-day rule), or that both buttons only hide it until the next status change | H10 · H2 | 2 | S | Backlog | Reminder copy and buttons are fixed by US05-1; observe T2 in the usability test (H3) before changing |
 | 11 | Pipeline (T2) | After "Follow-up done" or "Dismiss" the reminder just disappears, with no confirmation that the choice was saved | H1 | 2 | S | Backlog | US05-5 only requires that it disappears; a short status message would need a decision on wording |
 | 12 | All forms | After a failed submit, focus stays on the button, and only the general message is announced (`role="alert"`), not the field errors | WCAG 3.3.1 · 4.1.3 · H9 | 2 | M | Backlog | Needs focus management in every form; test with a screen reader first |
-| 13 | Header | The nav does not show the current page (no `aria-current`, no visual state) | H1 · WCAG 2.4.8 (AAA) | 2 | S | Backlog | Severity 2: only 2–3 links, and each page has an h1 |
+| 13 | Header | The nav does not show the current page (no `aria-current`, no visual state) | H1 · WCAG 2.4.8 (AAA) | 2 | S | Fixed (prompt 11) | Active item is green and has `aria-current="page"` (§9.5) |
 | 14 | Login | No "Forgot password?" | H9 | 2 | L | Backlog | Password reset is not in the MVP scope (needs email flow and SPEC) |
 | 15 | New application (T1) | After saving, the only feedback is the new card appearing in "Sent"; no "Application saved" message | H1 | 1 | S | Backlog | The card is visible right away at the top of "Sent" |
 | 16 | All forms | Nothing says that every field is required | H5 · WCAG 3.3.2 | 1 | S | Backlog | All fields are required, and errors are clear when one is missing |
 | 17 | New application | No explicit "Cancel" next to "Save application"; only "← Pipeline" above the heading | H3 | 1 | S | Backlog | The back link and browser back both work |
 | 18 | Company page (T3) | "Median-based range" is statistics jargon for most students | H2 | 1 | S | Backlog | The text is fixed by US06-1; check in the usability test |
 | 19 | Pipeline | Empty columns show only the heading with "(0)" | H1 | 1 | S | Backlog | The count already says it is empty |
-| 20 | Privacy settings | In the delete-account confirmation, "Cancel" is a filled blue primary button next to the red "Yes, delete my account", so both look like main actions | H4 · H5 | 1 | S | Backlog | Focus already moves into the panel, and Cancel is the safe choice |
+| 20 | Privacy settings | In the delete-account confirmation, "Cancel" is a filled blue primary button next to the red "Yes, delete my account", so both look like main actions | H4 · H5 | 1 | S | Fixed (prompt 11) | Cancel now uses the neutral secondary button (§9.5) |
 | 21 | All | No "skip to content" link | WCAG 2.4.1 | 1 | S | Backlog | Landmarks (`header`, `nav`, `main`) satisfy 2.4.1; the nav has only 2–3 links |
-| 22 | All | `globals.css` sets `font-family: Arial`, so the Geist font that the layout loads is never used | H8 | 0 | S | Backlog | Cosmetic, no usability effect; remove the unused font load or use it |
+| 22 | All | `globals.css` sets `font-family: Arial`, so the Geist font that the layout loads is never used | H8 | 0 | S | Fixed (prompt 11) | Source Sans 3 / Source Serif 4 are loaded and used (§9.3) |
 
 ## 4. Contrast
+
+> **Prompt 11:** the colours below were replaced by design tokens with a light and a dark theme. See [§9 Visual design](#9-visual-design) for the current palette. This section records the prompt 10 state.
 
 ### 4.1 Colour set (after)
 
@@ -144,16 +150,19 @@ Problems: #1 (fixed); #7 (fixed); #6, #18 (backlog). Assumption: the student has
 
 ## 6. Lighthouse (Accessibility)
 
-To be run by the developer (Chrome DevTools → Lighthouse → Accessibility, desktop) after the fixes.
+Run on 22 Nov 2026 in Chrome DevTools (Navigation mode, Desktop, "Clear storage" off to keep the session), on the local dev server after the visual redesign (prompt 11).
 
-| Page | Score | Notes |
-|---|---|---|
-| /login | _TBD_ | |
-| /pipeline | _TBD_ | |
-| /applications/new | _TBD_ | |
-| /applications/[id] | _TBD_ | |
-| /companies/[id] | _TBD_ | |
-| /admin/overview | _TBD_ | |
+| Page | Account | Light | Dark |
+|---|---|---|---|
+| `/login` | — | 100 | 100 |
+| `/pipeline` (with reminders) | student (demo) | 100 | 100 |
+| `/applications/new` | student (demo) | 100 | — |
+| `/applications/[id]` | student (demo) | 100 | — |
+| `/companies/[id]` (with statistic) | student (demo) | 100 | — |
+| `/settings/privacy` | student (demo) | 100 | — |
+| `/admin/overview` (with chart) | Career Service | 100 | 100 |
+
+Lighthouse also lists 10 "items to check manually" on every page (keyboard focus, tab order, focus traps, focus on new content, landmarks, offscreen content). These were covered by the keyboard-only manual check. Automated tools only detect part of accessibility issues, which is why this review also includes the heuristic review, the cognitive walkthrough and the manual checks.
 
 ## 7. Backlog
 
@@ -164,16 +173,13 @@ To be run by the developer (Chrome DevTools → Lighthouse → Accessibility, de
 | 10 | Reminder does not explain why it appeared or what the buttons do | Severity 2; the labels are fixed by US05-1; test T2 first |
 | 11 | No confirmation after Follow-up done / Dismiss | Severity 2; wording to decide |
 | 12 | Field errors are not announced and focus does not move to them | Severity 2, effort M; every form |
-| 13 | Nav does not show the current page | Severity 2; small nav, every page has an h1 |
 | 14 | No "Forgot password?" | Out of MVP scope |
 | 15 | No "Application saved" message | Severity 1; the new card is the feedback |
 | 16 | Required fields not marked | Severity 1; all fields are required, and errors are clear |
 | 17 | No Cancel on the new-application form | Severity 1; back link exists |
 | 18 | "Median-based range" jargon | Severity 1; text fixed by US06-1 |
 | 19 | Empty columns show only a heading | Severity 1 |
-| 20 | Cancel styled as a primary button in the delete-account step | Severity 1 |
 | 21 | No skip link | Severity 1; landmarks satisfy 2.4.1 |
-| 22 | Geist font loaded but Arial used | Severity 0; cosmetic |
 
 ## 8. Before / after
 
@@ -195,3 +201,83 @@ Screenshots go in `docs/screenshots/`. "Before": Mac in dark mode, before the fi
 | Privacy settings | ![](screenshots/before-privacy.png) | ![](screenshots/after-privacy.png) |
 | Account deleted | ![](screenshots/before-account-deleted.png) | ![](screenshots/after-account-deleted.png) |
 | Access denied | ![](screenshots/before-access-denied.png) | ![](screenshots/after-access-denied.png) |
+
+## 9. Visual design
+
+Prompt 11 and decision 047 (which replaces 046) changed the look of the app. The style now follows the Assignment 1 mockups (S1–S5): a serif burgundy wordmark and page titles, sage-green primary buttons, pipeline columns in light sage with white cards and a soft shadow, a rose reminder card with burgundy text, and a warm off-white header. Users can pick a **light or dark theme**. This change is visual only, with no new pages, features or copy. The mockup elements that are not in the MVP (Companies/Insights menus, sidebar, filters, hiring process, user name) were left out.
+
+### 9.1 Design tokens
+
+The palette is defined once, as semantic CSS variables in `app/globals.css`:
+- light: `:root` / `[data-theme="light"]`;
+- dark: `[data-theme="dark"]`;
+- a no-JavaScript fallback: `prefers-color-scheme`.
+
+They are exposed to Tailwind through `@theme inline` (`bg-surface`, `text-fg`, `outline-focus`, …). Components never use raw palette colours, and a test enforces this. Light values were sampled from the mockup pixels. Dark values were chosen to keep the same roles: burgundy becomes a light rose and sage becomes a light sage on warm near-black.
+
+`tests/unit/contrast.test.ts` checks every pair the UI uses, in **both** themes: 130+ assertions. The table shows each token's **lowest** ratio over the surfaces it appears on.
+
+| Token | Use | Light | Dark | Lowest ratio light / dark (on) | Required |
+|---|---|---|---|---|---|
+| `brand` | Wordmark, page titles | `#7f2835` | `#e8a5ae` | 7.59 / 7.35 (surface-muted) | 4.5 |
+| `primary` | Primary button, links, active nav | `#4a7062` | `#8cc4af` | 4.53 / 7.50 (surface-muted) | 4.5 |
+| `primary-hover` | Hover of primary | `#3b5e52` | `#a3d3c1` | 5.89 / 8.92 (surface-muted) | 4.5 |
+| `on-primary` | Text on the primary button | `#ffffff` | `#10201a` | 5.55 / 8.55 (primary) | 4.5 |
+| `accent` | Column titles, labels, big numbers | `#3b5e52` | `#a6d4c3` | 5.89 / 9.05 (surface-muted) | 4.5 |
+| `fg` | Body text | `#2a2326` | `#f1ece8` | 10.80 (reminder-bg) / 11.12 (secondary) | 4.5 |
+| `fg-muted` | Secondary text, hints, chart labels | `#6d6668` | `#b8afb1` | 4.57 / 6.92 (surface-muted) | 4.5 |
+| `reminder-fg` | Reminder text | `#7f2835` | `#f6c9cf` | 6.54 / 9.14 (reminder-bg) | 4.5 |
+| `danger` | Errors, destructive button | `#a3262c` | `#f29b9b` | 5.14 / 6.41 (reminder-bg) | 4.5 |
+| `on-danger` | Text on the danger button | `#ffffff` | `#2a0d10` | 7.31 / 8.54 (danger) | 4.5 |
+| `success` | Success messages | `#2f6b4f` | `#8fd3ad` | 5.14 / 8.53 (surface-muted) | 4.5 |
+| `border` | Control boundaries (inputs, secondary buttons, toggle) | `#7e7975` | `#80787a` | 3.02 (reminder-bg) / 3.03 (secondary) | 3 |
+| `focus` | Focus outline | `#3b5e52` | `#8cc4af` | 5.07 (reminder-bg) / 6.60 (secondary) | 3 |
+| `chart-bar` | Dashboard bars | `#4a7062` | `#6fb39b` | 5.55 / 7.11 (surface) | 3 |
+
+These backgrounds and decorative tokens carry no text requirement of their own. Their pairs are covered above.
+
+| Token | Light | Dark |
+|---|---|---|
+| `surface` (page) | `#ffffff` | `#1b1a1a` |
+| `surface-raised` (cards, inputs) | `#ffffff` | `#262324` |
+| `surface-muted` (columns, tiles, response-time panel) | `#dfebe4` | `#1f2a26` |
+| `surface-header` | `#faf8f5` | `#221f20` |
+| `secondary` / `secondary-hover` (neutral button) | `#f4f0ec` / `#e9e3dd` | `#34302f` / `#403b3a` |
+| `border-subtle` (decorative card edges, dividers) | `#e1dad2` | `#3a3536` |
+| `reminder-bg` | `#e7d4d3` | `#43262b` |
+| `danger-bg` / `danger-hover` | `#fbeaea` / `#86191f` | `#3a2022` / `#f6b4b4` |
+| `chart-grid` / `chart-text` | `#e1dad2` / `#6d6668` | `#3a3536` / `#b8afb1` |
+
+### 9.2 Mockup colours adjusted for AA
+
+| Mockup colour | Problem | Change |
+|---|---|---|
+| Sage button `#598776` with white text | 4.08:1 < 4.5. It is also 3.85 for the green active nav text on the off-white header. | `primary` darkened to `#4a7062`. This is the smallest darkening that passes 4.5 on every surface it sits on (white 5.55, header, sage column 4.53). The mockup dark green `#3b5e52` is used for hover. |
+| Input border `#e1dad2` | 1.39:1 on white < 3 (WCAG 1.4.11) | Kept only for decorative edges (`border-subtle`). Control boundaries use `#7e7975`, the lightest grey that reaches 3:1 on every light surface, including the rose card. |
+| Muted grey `#6d6668` on the rose card `#e7d4d3` | 3.93:1 < 4.5 | Reminder cards show role and days in `fg` (`#2a2326`, 10.8:1), as in the mockup. |
+
+Each of these "why" cases is also a test that asserts the mockup value fails.
+
+### 9.3 Typography
+
+- **Source Serif 4** for the wordmark and `h1` page titles, in burgundy.
+- **Source Sans 3** for everything else.
+- Both are loaded with `next/font/google`, so there is no new npm dependency.
+
+This also resolves finding #22: Geist was loaded but Arial was used.
+
+### 9.4 Theme toggle
+
+- A "Light / Dark" button group sits in the header on every page, including login and register. The selected option has `aria-pressed`.
+- On first visit the app follows the system setting (`prefers-color-scheme`). A choice is saved in `localStorage` under the key `theme`.
+- **No flash:** an inline script in `<head>` (`app/layout.tsx`) sets `data-theme` on `<html>` before first paint. This is the pattern from the Next.js guide *Preventing flash before hydration*. `<html>` has `suppressHydrationWarning`.
+- The toggle reads the attribute with `useSyncExternalStore`. Neither option is pressed during server rendering, so there is no hydration mismatch.
+- Without JavaScript, CSS falls back to the system setting.
+- `color-scheme` follows the theme, so native inputs, selects and date pickers match it.
+- The dashboard chart reads `--chart-bar`, `--chart-grid` and `--chart-text` from the page and redraws when the theme changes.
+
+### 9.5 Other visual changes
+
+- The active nav item is green and has `aria-current="page"` (resolves finding #13). "Pipeline" stays active on application and company pages, as in mockups S2–S3.
+- Buttons are rounded (pill) as in the mockups. A new `secondaryButtonClass` is used for Cancel actions. This resolves finding #20: Cancel in delete account is no longer a filled primary button.
+- The favicon is now burgundy.

@@ -40,12 +40,12 @@ export function StatusChangeForm({ today, currentStatus, action }: Props) {
         errors={state.fieldErrors?.changedOn}
       />
       {state.message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
       {state.saved && (
-        <p role="status" className="text-sm text-green-800">
+        <p role="status" className="text-sm text-success">
           Status updated.
         </p>
       )}

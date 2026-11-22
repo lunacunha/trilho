@@ -1,13 +1,10 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { buttonClass } from "@/components/form-field";
+import { dangerButtonClass, secondaryButtonClass } from "@/components/form-field";
 import { deleteMyAccount, type PrivacyActionState } from "./actions";
 
 const initialState: PrivacyActionState = {};
-
-const dangerButtonClass =
-  "rounded bg-red-700 px-4 py-2 font-medium text-white hover:bg-red-800 focus:outline-2 focus:outline-offset-2 focus:outline-red-700 disabled:opacity-60";
 
 /** US08-3: "Delete my account" opens a confirmation step that lists what will be deleted. */
 export function DeleteAccount() {
@@ -33,8 +30,8 @@ export function DeleteAccount() {
   }
 
   return (
-    <div className="rounded border border-red-300 bg-red-50 p-4">
-      <h3 ref={headingRef} tabIndex={-1} className="mb-2 font-semibold focus:outline-2 focus:outline-red-700">
+    <div className="rounded border border-danger bg-danger-bg p-4">
+      <h3 ref={headingRef} tabIndex={-1} className="mb-2 font-semibold focus:outline-2 focus:outline-danger">
         Delete your account?
       </h3>
       <p className="mb-2 text-sm">This permanently deletes:</p>
@@ -50,12 +47,12 @@ export function DeleteAccount() {
         <button type="submit" className={dangerButtonClass} disabled={pending}>
           {pending ? "Deleting…" : "Yes, delete my account"}
         </button>
-        <button type="button" className={buttonClass} disabled={pending} onClick={() => setConfirming(false)}>
+        <button type="button" className={secondaryButtonClass} disabled={pending} onClick={() => setConfirming(false)}>
           Cancel
         </button>
       </form>
       {state.error && (
-        <p role="alert" className="mt-3 text-sm text-red-700">
+        <p role="alert" className="mt-3 text-sm text-danger">
           {state.error}
         </p>
       )}

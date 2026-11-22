@@ -16,7 +16,7 @@ export default function AdminOverviewPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-semibold">Career Service dashboard</h1>
-      <p className="mb-8 text-sm text-zinc-700">
+      <p className="mb-8 text-sm text-fg-muted">
         Only students who consented are counted. Companies and channels with fewer than 5 applications are hidden.
       </p>
       <Suspense fallback={<p>Loading…</p>}>
@@ -90,10 +90,10 @@ async function DashboardContent() {
 
 function Indicator({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded border border-zinc-300 p-4">
-      <dt className="text-sm text-zinc-700">{label}</dt>
-      <dd className="mt-1 text-3xl font-semibold">{value}</dd>
-      {hint && <dd className="text-sm text-zinc-700">{hint}</dd>}
+    <div className="rounded-lg bg-surface-muted p-4">
+      <dt className="text-sm text-fg-muted">{label}</dt>
+      <dd className="mt-1 text-3xl font-semibold text-accent">{value}</dd>
+      {hint && <dd className="text-sm text-fg-muted">{hint}</dd>}
     </div>
   );
 }
@@ -109,13 +109,13 @@ function RateTable({
   rows: DashboardRow[];
   empty: string;
 }) {
-  if (rows.length === 0) return <p className="text-zinc-700">{empty}</p>;
+  if (rows.length === 0) return <p className="text-fg-muted">{empty}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left">
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b border-zinc-300">
+          <tr className="border-b border-border">
             <th scope="col" className="py-2 pr-4">
               {firstColumn}
             </th>
@@ -129,7 +129,7 @@ function RateTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.name} className="border-b border-zinc-200">
+            <tr key={row.name} className="border-b border-border-subtle">
               <th scope="row" className="py-2 pr-4 font-normal">
                 {row.name}
               </th>

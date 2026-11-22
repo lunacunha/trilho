@@ -11,7 +11,7 @@ export function ConsentToggle({ sharing }: { sharing: boolean }) {
   return (
     <form action={formAction} className="flex flex-col items-start gap-2">
       <input type="hidden" name="consent" value={sharing ? "dont_share" : "share"} />
-      <p id="consent-change-help" className="text-sm text-zinc-700">
+      <p id="consent-change-help" className="text-sm text-fg-muted">
         {sharing
           ? "Your applications will stop counting in company response times and Career Service statistics right away."
           : "Your applications will count, without your name, in company response times and Career Service statistics."}
@@ -20,7 +20,7 @@ export function ConsentToggle({ sharing }: { sharing: boolean }) {
         {pending ? "Saving…" : sharing ? "Withdraw consent" : "Share anonymously"}
       </button>
       {state.error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {state.error}
         </p>
       )}

@@ -1,22 +1,146 @@
 @import "tailwindcss";
 
-/* Light theme only in the MVP (decision 046): no dark-mode block. */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Native inputs, selects and date pickers render light even when the OS is in dark mode */
+/*
+ * Design tokens (prompt 11, decision 047). Palette from the Assignment 1 mockups;
+ * tests/unit/contrast.test.ts checks every pair in both themes for WCAG AA.
+ * Components use only these semantic tokens (bg-surface, text-fg, outline-focus, …),
+ * never raw palette colours. Keep every value a 6-digit hex so the test can read it.
+ */
+
+/* Light theme (default) */
+:root,
+:root[data-theme="light"] {
   color-scheme: light;
+  --brand: #7f2835;
+  --primary: #4a7062;
+  --primary-hover: #3b5e52;
+  --on-primary: #ffffff;
+  --accent: #3b5e52;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #dfebe4;
+  --surface-header: #faf8f5;
+  --secondary: #f4f0ec;
+  --secondary-hover: #e9e3dd;
+  --fg: #2a2326;
+  --fg-muted: #6d6668;
+  --border: #7e7975;
+  --border-subtle: #e1dad2;
+  --reminder-bg: #e7d4d3;
+  --reminder-fg: #7f2835;
+  --danger: #a3262c;
+  --danger-hover: #86191f;
+  --on-danger: #ffffff;
+  --danger-bg: #fbeaea;
+  --success: #2f6b4f;
+  --focus: #3b5e52;
+  --chart-bar: #4a7062;
+  --chart-grid: #e1dad2;
+  --chart-text: #6d6668;
+}
+
+/* Dark theme */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --brand: #e8a5ae;
+  --primary: #8cc4af;
+  --primary-hover: #a3d3c1;
+  --on-primary: #10201a;
+  --accent: #a6d4c3;
+  --surface: #1b1a1a;
+  --surface-raised: #262324;
+  --surface-muted: #1f2a26;
+  --surface-header: #221f20;
+  --secondary: #34302f;
+  --secondary-hover: #403b3a;
+  --fg: #f1ece8;
+  --fg-muted: #b8afb1;
+  --border: #80787a;
+  --border-subtle: #3a3536;
+  --reminder-bg: #43262b;
+  --reminder-fg: #f6c9cf;
+  --danger: #f29b9b;
+  --danger-hover: #f6b4b4;
+  --on-danger: #2a0d10;
+  --danger-bg: #3a2022;
+  --success: #8fd3ad;
+  --focus: #8cc4af;
+  --chart-bar: #6fb39b;
+  --chart-grid: #3a3536;
+  --chart-text: #b8afb1;
+}
+
+/* Without JavaScript the theme script cannot run: follow the system setting. Same values as dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --brand: #e8a5ae;
+    --primary: #8cc4af;
+    --primary-hover: #a3d3c1;
+    --on-primary: #10201a;
+    --accent: #a6d4c3;
+    --surface: #1b1a1a;
+    --surface-raised: #262324;
+    --surface-muted: #1f2a26;
+    --surface-header: #221f20;
+    --secondary: #34302f;
+    --secondary-hover: #403b3a;
+    --fg: #f1ece8;
+    --fg-muted: #b8afb1;
+    --border: #80787a;
+    --border-subtle: #3a3536;
+    --reminder-bg: #43262b;
+    --reminder-fg: #f6c9cf;
+    --danger: #f29b9b;
+    --danger-hover: #f6b4b4;
+    --on-danger: #2a0d10;
+    --danger-bg: #3a2022;
+    --success: #8fd3ad;
+    --focus: #8cc4af;
+    --chart-bar: #6fb39b;
+    --chart-grid: #3a3536;
+    --chart-text: #b8afb1;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: var(--brand);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-header: var(--surface-header);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-reminder-bg: var(--reminder-bg);
+  --color-reminder-fg: var(--reminder-fg);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-on-danger: var(--on-danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-success: var(--success);
+  --color-focus: var(--focus);
+  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    background: var(--surface);
+    color: var(--fg);
+    font-family: var(--font-sans);
+  }
+
+  /* Page titles: serif, burgundy (mockups S1–S5) */
+  h1 {
+    font-family: var(--font-serif);
+    color: var(--brand);
+  }
 }

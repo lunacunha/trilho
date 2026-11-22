@@ -19,12 +19,12 @@ export function EditApplicationForm({ today, initialValues, action }: Props) {
     <form key={state.submitId ?? 0} action={formAction} className="flex flex-col gap-4" noValidate>
       <ApplicationFields today={today} values={state.values ?? initialValues} errors={state.fieldErrors} />
       {state.message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
       {state.saved && (
-        <p role="status" className="text-sm text-green-800">
+        <p role="status" className="text-sm text-success">
           Changes saved.
         </p>
       )}

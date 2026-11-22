@@ -1,7 +1,7 @@
 // Applications service: create, read, edit, delete, status changes and the pipeline.
 import { and, asc, desc, eq, gt, inArray, max, notExists } from "drizzle-orm";
 import { z } from "zod";
-import { db, type Database } from "../../db/client.ts";
+import { db, withTransaction, type Executor } from "../../db/client.ts";
 import {
   application,
   channel,
@@ -30,9 +30,6 @@ import {
 import { AccessDeniedError, NotFoundError, ValidationError } from "./errors.ts";
 import { recordEvent } from "./events.ts";
 import type { ApplicationDetail, CurrentUser, Pipeline, PipelineCard } from "./types.ts";
-
-type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
-type Executor = Database | Transaction;
 
 /** SPEC §3: only students own applications. */
 function requireStudent(user: CurrentUser): void {
@@ -118,7 +115,7 @@ export async function createApplication(
   // The entry layer already validated; re-checking keeps the service safe for other callers.
   const data = applicationInputSchema(opts.today).parse(input);
 
-  return db.transaction(async (tx) => {
+  return withTransaction(async (tx) => {
     const ids = await listIds(tx, data);
     const companyId = await findOrCreateCompany(tx, data.company);
 
@@ -209,7 +206,7 @@ export async function updateApplication(
   requireStudent(user);
   const data = applicationInputSchema(today).parse(input);
 
-  await db.transaction(async (tx) => {
+  await withTransaction(async (tx) => {
     const owned = await ownedApplication(tx, user, id, { lock: true });
     const [initial, next] = await historyOf(tx, owned.id).limit(2);
     if (next && data.dateSent > next.changedOn) {
@@ -246,7 +243,7 @@ export async function changeStatus(
   input: StatusChangeInput,
   today: string,
 ): Promise<void> {
-  await db.transaction(async (tx) => {
+  await withTransaction(async (tx) => {
     // The row lock serialises concurrent changes (and R5), so R6 is checked against fresh data
     const owned = await ownedApplication(tx, user, id, { lock: true });
     const [{ lastChangeOn }] = await tx
@@ -358,7 +355,7 @@ async function evaluateReminders(
     if (state === "show" && existing) {
       result.set(row.id, { daysQuiet, reason: existing.reason });
     } else if (state === "trigger") {
-      await db.transaction(async (tx) => {
+      await withTransaction(async (tx) => {
         // The unique quiet period keeps concurrent loads to one reminder and one event
         const inserted = await tx
           .insert(reminder)
@@ -425,7 +422,7 @@ export async function findNoResponseDue(userId: string, today: string): Promise<
  * at once record one automatic change.
  */
 export async function convertToNoResponse(due: NoResponseDue[]): Promise<void> {
-  await db.transaction(async (tx) => {
+  await withTransaction(async (tx) => {
     for (const { id, status, lastChangeOn, date } of due) {
       const newerChange = tx
         .select({ id: statusChange.id })

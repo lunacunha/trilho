@@ -4,13 +4,23 @@ A shared job-application tracker for FEUP master's students. Students track thei
 
 MVP for the Information Systems Architecture course (MESG, FEUP).
 
-**Live:** `https://<production-url>` _(to be filled in after deployment)_
+**Live:** [https://trilho-mocha.vercel.app](https://trilho-mocha.vercel.app)
 
 > **Demo access:** demo credentials (a student and a Career Service account) are shared separately with the teaching team. **All data in the app is fictional**: companies, people and applications come from a seed script.
 
+## How it was built
+
+Built with an LLM coding agent (Claude Code), spec-first and test-first:
+
+1. Stack, architecture and folders decided and written down before the first prompt ([`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)).
+2. [`SPEC.md`](SPEC.md) written from the Assignment 1 user stories: acceptance scenarios, business rules R1–R12, product events.
+3. Project rules for the agent in [`CLAUDE.md`](CLAUDE.md).
+4. Data model before screens, tests before code (red phase), then one slice per prompt ([`docs/prompts/`](docs/prompts/)).
+5. Every plan reviewed before approval; every change verified (tests + manual checks) before committing. Decisions in [`docs/decisions.md`](docs/decisions.md).
+
 ## Stack
 
-Next.js 16 (App Router) · TypeScript (strict) · Tailwind CSS 4 · Drizzle ORM + drizzle-kit · Neon Postgres (`@neondatabase/serverless`) · Better Auth · Zod · Nodemailer (Gmail SMTP) · Chart.js · Vitest · Vercel.
+Next.js 16 (App Router) · TypeScript (strict) · Tailwind CSS 4 · Drizzle ORM + drizzle-kit · Neon Postgres (`@neondatabase/serverless`: HTTP for queries, one WebSocket pool per transaction) · Better Auth · Zod · Nodemailer (Gmail SMTP) · Chart.js · Vitest · Vercel.
 
 ## Run locally
 
@@ -46,8 +56,8 @@ Environment variables are documented in [`.env.example`](.env.example). Scripts 
 
 ## Tests
 
-- **Unit** (`tests/unit/`): business rules R1–R12 as pure functions, using the numeric examples from `SPEC.md`, plus validation and access rules.
-- **Integration** (`tests/integration/`): services against a real Postgres (Neon `test` branch only), covering ownership, consent, privacy thresholds, transactions and product events.
+- **Unit** (`tests/unit/`): business rules R1–R12 as pure functions, using the numeric examples from `SPEC.md`, plus validation, access rules and WCAG AA contrast for both themes.
+- **Integration** (`tests/integration/`): services against a real Postgres (Neon `test` branch only), covering ownership, consent, privacy thresholds, transactions, race conditions and product events.
 - Test names start with the scenario or rule ID (e.g. `US02-6: …`, `R2: …`). The full map from SPEC to tests is in [`docs/testing/traceability.md`](docs/testing/traceability.md).
 
 ## Folder structure
@@ -64,6 +74,7 @@ lib/
   validation.ts   Zod schemas for every input
 db/
   schema.ts       Drizzle schema (the only place tables change)
+  client.ts       Database client (HTTP) and withTransaction
   migrations/     Generated SQL migrations
   seed.ts         Fictional demo data (+ seed-guard.ts)
 scripts/          metrics
@@ -87,6 +98,7 @@ Layers: UI → entry (Server Actions, Route Handlers) → services → data. Onl
 | [`docs/testing/traceability.md`](docs/testing/traceability.md) | SPEC scenarios → automated tests |
 | [`docs/product/mvp-scope.md`](docs/product/mvp-scope.md) | What is in and out of the MVP |
 | [`docs/product/metrics.md`](docs/product/metrics.md) | Product metrics M1–M7 |
+| [`docs/product/learnings.MD`](docs/product/learnings.MD) | What I learned while building the MVP |
 | [`docs/ux-review.md`](docs/ux-review.md) | UX and accessibility review |
 | [`docs/usability-test-plan.md`](docs/usability-test-plan.md) | Usability test plan |
 | [`docs/deploy.md`](docs/deploy.md) | Production deploy runbook |

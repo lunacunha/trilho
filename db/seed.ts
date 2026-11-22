@@ -12,7 +12,7 @@ import { randomUUID } from "node:crypto";
 import { inArray, sql } from "drizzle-orm";
 import { auth } from "../lib/auth.ts";
 import { displayCompanyName, normalizeCompanyName } from "../lib/rules/company-name.ts";
-import { db, pool } from "./client.ts";
+import { db, withTransaction } from "./client.ts";
 import { assertOnlySeedUsers } from "./seed-guard.ts";
 import * as s from "./schema.ts";
 import type { ApplicationStatus } from "./schema.ts";
@@ -577,7 +577,7 @@ async function main() {
   }
 
   // 6. Write everything in one transaction
-  await db.transaction(async (tx) => {
+  await withTransaction(async (tx) => {
     // Users: verified, role, consent, registration dates before their first activity
     const userRng = mulberry32(SEED + 980_000);
     for (const u of ALL_USERS) {
@@ -672,10 +672,7 @@ async function main() {
   console.log(`\nAll seeded users share the password from SEED_PASSWORD. Data is fictional.`);
 }
 
-main()
-  .then(() => pool.end())
-  .catch(async (error: unknown) => {
-    console.error("Seed failed:", error instanceof Error ? error.message : error);
-    await pool.end();
-    process.exit(1);
-  });
+main().catch((error: unknown) => {
+  console.error("Seed failed:", error instanceof Error ? error.message : error);
+  process.exit(1);
+});

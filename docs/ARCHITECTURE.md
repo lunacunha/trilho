@@ -20,7 +20,7 @@ One Next.js application serves the UI and the server logic. Data lives in a Neon
 | UI | React Server Components, Tailwind CSS, Chart.js (dashboard) |
 | Database | Neon Postgres 18 (EU, Frankfurt) |
 | ORM / migrations | Drizzle ORM + drizzle-kit |
-| DB driver | `@neondatabase/serverless` |
+| DB driver | `@neondatabase/serverless`: HTTP (`drizzle-orm/neon-http`) for queries and Better Auth; a WebSocket `Pool` per transaction via `withTransaction` in `db/client.ts` (decision 041) |
 | Auth | Better Auth (email + password, email verification) |
 | Validation | Zod |
 | Email | Nodemailer + Gmail SMTP |

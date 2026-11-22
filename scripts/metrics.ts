@@ -5,7 +5,7 @@
 
 import { printTarget } from "../db/env.ts";
 import { readFileSync } from "node:fs";
-import { pool } from "../db/client.ts";
+import { Pool } from "@neondatabase/serverless";
 import { parseMetricsSql } from "./metrics-sql.ts";
 
 const SQL_FILE = new URL("../docs/product/metrics.sql", import.meta.url);
@@ -15,6 +15,10 @@ async function main() {
   printTarget("Metrics", process.env.DATABASE_URL);
   console.log(`Run at: ${new Date().toISOString()} (read-only)\n`);
 
+  // A long-running script, so a Pool is fine here (the app uses db/client.ts instead)
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is not set.");
+  const pool = new Pool({ connectionString });
   const client = await pool.connect();
   try {
     await client.query("BEGIN TRANSACTION READ ONLY");
@@ -27,13 +31,11 @@ async function main() {
   } finally {
     await client.query("ROLLBACK").catch(() => {});
     client.release();
+    await pool.end();
   }
 }
 
-main()
-  .then(() => pool.end())
-  .catch(async (error: unknown) => {
-    console.error("Metrics failed:", error instanceof Error ? error.message : error);
-    await pool.end();
-    process.exit(1);
-  });
+main().catch((error: unknown) => {
+  console.error("Metrics failed:", error instanceof Error ? error.message : error);
+  process.exit(1);
+});

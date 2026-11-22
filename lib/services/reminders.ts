@@ -1,7 +1,7 @@
 // Reminders service (US05-5/6, R12): reactions to the reminder of the current quiet period.
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "../../db/client.ts";
+import { withTransaction } from "../../db/client.ts";
 import { application, reminder, statusChange } from "../../db/schema.ts";
 import type { ReminderOutcome } from "../rules/types.ts";
 import { AccessDeniedError, NotFoundError } from "./errors.ts";
@@ -24,7 +24,7 @@ async function react(user: CurrentUser, applicationId: string, outcome: Reminder
   if (user.role !== "student") throw new AccessDeniedError();
   if (!idSchema.safeParse(applicationId).success) throw new NotFoundError();
 
-  await db.transaction(async (tx) => {
+  await withTransaction(async (tx) => {
     // The row lock serialises this with status changes, so the quiet period cannot move meanwhile
     const [owned] = await tx
       .select({ id: application.id })

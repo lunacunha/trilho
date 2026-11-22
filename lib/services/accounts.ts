@@ -2,7 +2,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/client.ts";
 import { user as userTable } from "../../db/schema.ts";
-import { notImplemented } from "../not-implemented.ts";
+import { AccessDeniedError } from "./errors.ts";
 import type { CurrentUser } from "./types.ts";
 
 /**
@@ -13,7 +13,12 @@ export async function recordEmailVerified(userId: string, at: Date): Promise<voi
   await db.update(userTable).set({ emailVerifiedAt: at }).where(eq(userTable.id, userId));
 }
 
-/** Deletes the user; applications, history, reminders and events go by cascade (decision 027). */
+/**
+ * US08-3: deletes the current user's own account. One statement: the database cascades to
+ * sessions, credential accounts, applications → status changes → reminders, and product
+ * events (decision 027, docs/data-model.md "Delete behaviour"). Students only.
+ */
 export async function deleteAccount(user: CurrentUser): Promise<void> {
-  return notImplemented(user);
+  if (user.role !== "student") throw new AccessDeniedError();
+  await db.delete(userTable).where(eq(userTable.id, user.id));
 }

@@ -18,11 +18,13 @@ export class AccessDeniedError extends Error {
 
 /** The input breaks a business rule the service enforces itself (e.g. R6). */
 export class ValidationError extends Error {
-  constructor(
-    readonly field: string,
-    message: string,
-  ) {
+  // A normal field, not a parameter property: the seed runs with Node's type stripping,
+  // which only supports erasable syntax (tsconfig "erasableSyntaxOnly").
+  readonly field: string;
+
+  constructor(field: string, message: string) {
     super(message);
     this.name = "ValidationError";
+    this.field = field;
   }
 }

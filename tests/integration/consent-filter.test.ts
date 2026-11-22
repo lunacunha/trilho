@@ -63,9 +63,13 @@ describe("US06 / US07-3 / US08-1 — Only consenting students count", () => {
   });
 
   it("US07-3: dashboard numbers exclude non-consenting students", async () => {
-    // Consenting: 5 applications, 2 replied (10 and 20 days)
+    // Consenting: 5 applications to Lumen, 2 replied (10 and 20 days)
     await insertRepliedApplications(consenting, lumen, [10, 20]);
     for (let i = 0; i < 3; i++) await insertApplication({ user: consenting, company: lumen, dateSent: daysAgo(3) });
+    // Consenting: 3 replied applications to Vela (15 days) → hidden (R8), but reach the
+    // 5 replies the median needs (R3 minimum): median of [10, 15, 15, 15, 20] = 15
+    const vela = await createCompany("Vela Logistics");
+    await insertRepliedApplications(consenting, vela, [15, 15, 15]);
     // Non-consenting: 5 applications, all replied after 2 days
     await insertRepliedApplications(declined, lumen, [2, 2, 2, 2, 2]);
     await insertApplication({ user: declined, company: lumen, dateSent: daysAgo(1) });

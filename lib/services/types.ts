@@ -49,6 +49,7 @@ export type DashboardRow = { name: string; applications: number; replyRate: numb
 
 export type Dashboard = {
   activeStudents: number;
+  /** null = fewer than 5 replied applications from consenting students (R3 minimum). */
   medianDaysToFirstReply: number | null;
   companies: DashboardRow[];
   channels: DashboardRow[];

@@ -98,6 +98,7 @@ _Example:_ only Luna applied to company X → company X does not appear.
 **R9 — Active student (dashboard).** A consenting student who created an application or made a status change in the **last 30 days** (today included).
 _Example:_ today 15 Nov; last activity 20 Oct → active; last activity 10 Oct → not active.
 _Boundary:_ the window is today plus the 29 previous days. Today 15 Nov → 17 Oct is active; 16 Oct is not.
+_Activity dates:_ the moment the student acted in Trilho (application created, status change recorded), in Lisbon time — not the dates she typed in. Automatic "No response" changes (R5) are not activity.
 
 **R10 — Days since sent (pipeline card).** Today − date sent, in calendar days.
 _Example:_ sent on 1 Nov, today 15 Nov → "14 days".
@@ -182,7 +183,7 @@ _As a Career Service member, I want applications and replies by company and chan
 - **US07-1 Access.** A `career_service` user sees the dashboard. A `student` who opens its URL sees "Access denied". A visitor who is not logged in is sent to the login page. A `career_service` user who opens a student page is sent to the dashboard.
 - **US07-2 Content.** The dashboard shows:
   - **Active students** (R9);
-  - **Median time to first reply**, in days, across all consenting applications with a first response;
+  - **Median time to first reply**, in days, across all consenting applications with a first response — shown only with ≥ 5 such applications, otherwise "Not enough data yet";
   - **Companies table:** company, number of applications, reply rate (R7) — only companies with ≥ 5 applications (R8), sorted by number of applications, descending;
   - **Channel comparison:** a bar chart of reply rate per channel — only channels with ≥ 5 applications (R8).
 - **US07-3 Consent filter.** Applications of non-consenting students are excluded from every number.

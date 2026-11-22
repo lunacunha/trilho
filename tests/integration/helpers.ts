@@ -47,7 +47,7 @@ export async function createUser(
   const role = opts.role ?? "student";
   const consent = opts.consent === undefined ? (role === "student" ? true : null) : opts.consent;
   const name = opts.name ?? `Test User ${userCounter}`;
-  const email = `test.user${userCounter}.${randomUUID().slice(0, 8)}@up.pt`;
+  const email = `test.user${userCounter}.${randomUUID().slice(0, 8)}@example.com`;
   const id = randomUUID();
   await db.insert(s.user).values({
     id,

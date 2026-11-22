@@ -17,6 +17,7 @@ export function RegisterForm() {
         label="University email"
         type="email"
         autoComplete="email"
+        placeholder="up20XXXXXXX@up.pt"
         defaultValue={state.values?.email}
         errors={state.fieldErrors?.email}
         hint="@up.pt or @fe.up.pt"

@@ -8,7 +8,7 @@ type Props = { action: () => Promise<DeleteApplicationState> };
 const dangerClass =
   "rounded bg-red-700 px-4 py-2 font-medium text-white hover:bg-red-800 focus:outline-2 focus:outline-offset-2 focus:outline-red-600 disabled:opacity-60";
 const secondaryClass =
-  "rounded border border-zinc-400 bg-white px-4 py-2 font-medium hover:bg-zinc-100 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600";
+  "rounded border border-zinc-500 bg-white px-4 py-2 font-medium hover:bg-zinc-100 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600";
 
 /** US04-5: "Delete" asks for confirmation; Cancel changes nothing. */
 export function DeleteApplication({ action }: Props) {

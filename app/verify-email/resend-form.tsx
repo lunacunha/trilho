@@ -8,7 +8,7 @@ export function ResendForm({ email }: { email: string }) {
   const [state, formAction, pending] = useActionState(resendVerification, { email } satisfies ResendState);
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
-      <FormField id="email" label="University email" type="email" autoComplete="email" defaultValue={state.email} />
+      <FormField id="email" label="University email" type="email" autoComplete="email" placeholder="up20XXXXXXX@up.pt" defaultValue={state.email} />
       <div aria-live="polite" className="text-sm">
         {state.message && <p className="text-green-800">{state.message}</p>}
         {state.error && <p className="text-red-700">{state.error}</p>}

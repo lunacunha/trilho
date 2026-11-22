@@ -11,7 +11,7 @@ export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
-      <FormField id="email" label="University email" type="email" autoComplete="email" defaultValue={state.email} />
+      <FormField id="email" label="University email" type="email" autoComplete="email" placeholder="up20XXXXXXX@up.pt" defaultValue={state.email} />
       <FormField id="password" label="Password" type="password" autoComplete="current-password" />
       {state.message && (
         <div role="alert" className="text-sm text-red-700">

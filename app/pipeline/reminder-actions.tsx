@@ -11,7 +11,7 @@ type Props = {
 };
 
 const buttonClass =
-  "rounded border border-zinc-400 bg-white px-2 py-1 text-sm font-medium hover:bg-zinc-100 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600 disabled:opacity-60";
+  "rounded border border-zinc-500 bg-white px-2 py-1 text-sm font-medium hover:bg-zinc-100 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600 disabled:opacity-60";
 
 /** US05-1/5/6: "N days · Follow up?" with "Follow-up done" and "Dismiss". */
 export function ReminderActions({ daysQuiet, context, action }: Props) {

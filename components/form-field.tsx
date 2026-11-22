@@ -17,10 +17,12 @@ type FormFieldProps = FieldBase & {
   /** id of a <datalist> with suggestions. */
   list?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  /** An example of the expected format. Never real-looking personal data. */
+  placeholder?: string;
 };
 
 const controlClass =
-  "rounded border border-zinc-400 bg-white px-3 py-2 text-base focus:outline-2 focus:outline-offset-1 focus:outline-blue-600";
+  "rounded border border-zinc-500 bg-white px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-2 focus:outline-offset-1 focus:outline-blue-600";
 
 function describedBy(id: string, hint?: string, errors?: string[]): string | undefined {
   return [hint ? `${id}-hint` : null, errors?.length ? `${id}-error` : null].filter(Boolean).join(" ") || undefined;
@@ -54,6 +56,7 @@ export function FormField({
   max,
   list,
   onChange,
+  placeholder,
 }: FormFieldProps) {
   return (
     <div className="flex flex-col gap-1">
@@ -69,6 +72,7 @@ export function FormField({
         max={max}
         list={list}
         onChange={onChange}
+        placeholder={placeholder}
         required
         aria-invalid={errors?.length ? true : undefined}
         aria-describedby={describedBy(id, hint, errors)}

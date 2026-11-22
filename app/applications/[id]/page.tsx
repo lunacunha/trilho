@@ -58,6 +58,12 @@ async function ApplicationContent({ params }: Props) {
           </Link>
         </h1>
         <p className="text-lg">{detail.roleTitle}</p>
+        {/* T3 (docs/ux-review.md): say where the response time is, not only link the name */}
+        <p className="mt-1 text-sm">
+          <Link href={`/companies/${detail.company.id}`} className={linkClass}>
+            How long does {detail.company.name} usually take to reply?
+          </Link>
+        </p>
         <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
           <dt className="text-zinc-600">Status</dt>
           <dd className="font-medium">{STATUS_LABELS[detail.currentStatus]}</dd>

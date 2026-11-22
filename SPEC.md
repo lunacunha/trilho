@@ -106,7 +106,7 @@ _Example:_ sent on 1 Nov, today 15 Nov → "14 days".
 _Example:_ "Lumen Energy" exists; a student types " lumen  ENERGY " → linked to "Lumen Energy", no new company.
 _Example:_ "Lumen" and "Lumen Energy SA" are **different** companies (merging is US15, out of scope).
 
-**R12 — Reminder lifecycle.** A reminder belongs to one quiet period of one application. "Follow-up done" or "Dismiss" hides the reminder for that quiet period and does not change the status. A new status change starts a new quiet period, in which a new reminder can appear (R4).
+**R12 — Reminder lifecycle.** A reminder belongs to one quiet period of one application. "Follow-up done" or "Dismiss" hides the reminder for that quiet period and does not change the status. A new status change starts a new quiet period, in which a new reminder can appear (R4). Once a reminder is shown in a quiet period, it stays until the student reacts, even if the company's median later changes.
 
 ## 7. User stories and acceptance scenarios
 

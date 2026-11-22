@@ -10,6 +10,7 @@ import {
   getReminders,
   getStatusChanges,
   insertApplication,
+  insertReminder,
   insertRepliedApplications,
   resetDatabase,
   TODAY,
@@ -200,5 +201,22 @@ describe("US03 / US04-6/7 / US05 — Pipeline", () => {
     });
     const { columns } = await getPipeline(ana, TODAY);
     expect(columns.interview.find((c) => c.id === id)?.reminder).toBeNull();
+  });
+
+  it("R12: a stored reminder with an outcome for the current quiet period stays hidden", async () => {
+    const { id, statusChangeIds } = await insertApplication({ user: ana, company: ferro, dateSent: daysAgo(20) });
+    await insertReminder({ applicationId: id, statusChangeId: statusChangeIds[0], outcome: "followup_done" });
+    const { columns } = await getPipeline(ana, TODAY);
+    expect(columns.sent.find((c) => c.id === id)?.reminder).toBeNull();
+    expect(await getReminders(id)).toHaveLength(1);
+    expect(await getEvents("reminder_triggered")).toHaveLength(0);
+  });
+
+  it("R12: a stored reminder without an outcome shows again with its stored reason, without a new event", async () => {
+    const { id, statusChangeIds } = await insertApplication({ user: ana, company: ferro, dateSent: daysAgo(20) });
+    await insertReminder({ applicationId: id, statusChangeId: statusChangeIds[0] });
+    const { columns } = await getPipeline(ana, TODAY);
+    expect(columns.sent.find((c) => c.id === id)?.reminder).toEqual({ daysQuiet: 20, reason: "fallback_14_days" });
+    expect(await getEvents("reminder_triggered")).toHaveLength(0);
   });
 });

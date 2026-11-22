@@ -1,6 +1,6 @@
 # Trilho — project status and decisions
 
-_Last updated: 2026-11-22 00:22 (Phase 5, slice 04 / US02+US03 done)_
+_Last updated: 2026-11-22 (Phase 5, slice 06 / US06+US05 implemented)_
 
 ## Deadline
 - Assignment 2 deadline: **23 Nov 2026, 08:00** → work must be finished on **22 Nov**.
@@ -15,7 +15,9 @@ _Last updated: 2026-11-22 00:22 (Phase 5, slice 04 / US02+US03 done)_
 - **Phase 5 — in progress.** Prompts 03–08 in `docs/prompts/`.
   - **Slice 03 (US01) — DONE 21 Nov.** Gmail SMTP (`trilho.demo@gmail.com`) delivers to @up.pt inbox.
   - **Slice 04 (US02+US03) — DONE 22 Nov 00:20.** All 7 manual checks passed. **H1 first data point: logging one application took < 30 s** (user's own test). Form-opened event recorded client-side (no prefetch phantom events). Cards ordered newest first.
-  - Next: slice 05 (US04). Prompt 05 includes the fix for the R5 race (guarded UPDATE checks the 60-day condition in the same statement + integration test).
+  - **Slice 06 (US06+US05) — implemented 22 Nov, awaiting manual check.** Company page `/companies/[id]` (R1–R3), pipeline reminders (R4/R12) with Follow-up done / Dismiss. A shown reminder stays until the student reacts, even if the median changes (R12, SPEC updated 22 Nov).
+  - Slice 05 (US04) — committed (6a19fe5); this file was not updated for it.
+  - Next: slice 07 (dashboard).
 - User's choices for Phase 5: all 8 Must stories + dashboard chart + company suggestions; real email kept.
 
 ## TO DO LATER (remind the user — she asked to keep track)

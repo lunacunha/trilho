@@ -78,4 +78,29 @@ describe("R12 / US05-5/6/7 — Reminder lifecycle", () => {
     await expect(markFollowUpDone(bruno, appId)).rejects.toThrow(NotFoundError);
     expect((await getReminders(appId))[0].outcome).toBeNull();
   });
+
+  it("US05-6: no reminder showing (below threshold) → Follow-up done and Dismiss return Not found", async () => {
+    await cardReminder("2026-10-14"); // 13 days quiet: no reminder
+    await expect(markFollowUpDone(ana, appId)).rejects.toThrow(NotFoundError);
+    await expect(dismissReminder(ana, appId)).rejects.toThrow(NotFoundError);
+    expect(await getEvents("reminder_followup_done")).toHaveLength(0);
+    expect(await getEvents("reminder_dismissed")).toHaveLength(0);
+  });
+
+  it("US05-6: reminder already dismissed → a second reaction returns Not found and records nothing", async () => {
+    await cardReminder(DAY_19);
+    await dismissReminder(ana, appId);
+    await expect(markFollowUpDone(ana, appId)).rejects.toThrow(NotFoundError);
+    await expect(dismissReminder(ana, appId)).rejects.toThrow(NotFoundError);
+    expect((await getReminders(appId))[0].outcome).toBe("dismissed");
+    expect(await getEvents("reminder_dismissed")).toHaveLength(1);
+    expect(await getEvents("reminder_followup_done")).toHaveLength(0);
+  });
+
+  it("US05-6: the reminder of a past quiet period cannot be reacted to → Not found", async () => {
+    await cardReminder(DAY_19); // shown, no reaction
+    await changeStatus(ana, appId, { status: "in_process", changedOn: "2026-10-25" }, "2026-10-25");
+    await expect(dismissReminder(ana, appId)).rejects.toThrow(NotFoundError);
+    expect((await getReminders(appId))[0].outcome).toBeNull();
+  });
 });

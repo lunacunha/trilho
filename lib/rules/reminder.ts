@@ -1,8 +1,11 @@
 // R4 — Reminder trigger and R12 — Reminder lifecycle.
-import { notImplemented } from "../not-implemented.ts";
+import { daysBetween } from "./dates.ts";
 import type { ApplicationStatus, ReminderOutcome, ReminderReason } from "./types.ts";
 
 export const FALLBACK_THRESHOLD_DAYS = 14;
+
+/** Statuses R4 applies to. */
+export const REMINDER_STATUSES = ["sent", "in_process"] as const satisfies readonly ApplicationStatus[];
 
 /**
  * R4 threshold: the company median when it has a statistic (R3), otherwise 14 days.
@@ -12,7 +15,9 @@ export function reminderThreshold(companyMedianDays: number | null): {
   days: number;
   reason: ReminderReason;
 } {
-  return notImplemented(companyMedianDays);
+  return companyMedianDays === null
+    ? { days: FALLBACK_THRESHOLD_DAYS, reason: "fallback_14_days" }
+    : { days: Math.ceil(companyMedianDays), reason: "company_median" };
 }
 
 export type ReminderStateInput = {
@@ -30,9 +35,16 @@ export type ReminderStateInput = {
  * - "trigger": show it and record it for the first time in this quiet period
  * - "show": already triggered in this quiet period, no reaction yet
  * - "hidden": "Follow-up done" or "Dismiss" in this quiet period
+ * Once triggered, a reminder keeps showing for its quiet period even if the threshold
+ * later rises (R12: one reminder per quiet period).
  */
 export type ReminderState = "none" | "trigger" | "show" | "hidden";
 
 export function reminderState(input: ReminderStateInput): ReminderState {
-  return notImplemented(input);
+  if (!(REMINDER_STATUSES as readonly ApplicationStatus[]).includes(input.status)) return "none";
+  if (input.existing && input.existing.statusChangeId === input.lastChange.id) {
+    return input.existing.outcome === null ? "show" : "hidden";
+  }
+  if (daysBetween(input.lastChange.changedOn, input.today) < input.thresholdDays) return "none";
+  return "trigger";
 }

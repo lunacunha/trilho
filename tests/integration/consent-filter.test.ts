@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { getCompanyPage } from "@/lib/services/companies";
 import { setConsent } from "@/lib/services/consent";
 import { getDashboard } from "@/lib/services/dashboard";
+import { AccessDeniedError, NotFoundError } from "@/lib/services/errors";
 import {
   createCompany,
   createUser,
@@ -87,5 +88,14 @@ describe("US06 / US07-3 / US08-1 — Only consenting students count", () => {
     expect((await getCompanyPage(viewer, lumen.id)).statistic).toBeNull();
     await setConsent(declined, true);
     expect((await getCompanyPage(viewer, lumen.id)).statistic).toEqual({ label: "2–3 weeks", basedOn: 5 });
+  });
+
+  it("SPEC §10: unknown or malformed company id → Not found", async () => {
+    await expect(getCompanyPage(viewer, "00000000-0000-4000-8000-000000000000")).rejects.toThrow(NotFoundError);
+    await expect(getCompanyPage(viewer, "not-a-uuid")).rejects.toThrow(NotFoundError);
+  });
+
+  it("SPEC §3: a career_service user cannot open a company page (Access denied)", async () => {
+    await expect(getCompanyPage(careers, lumen.id)).rejects.toThrow(AccessDeniedError);
   });
 });

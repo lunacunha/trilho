@@ -7,6 +7,7 @@ import {
   channel,
   company,
   jobType,
+  reminder,
   sector,
   statusChange,
   type ApplicationStatus,
@@ -16,6 +17,9 @@ import { displayCompanyName, normalizeCompanyName } from "../rules/company-name.
 import { daysBetween } from "../rules/dates.ts";
 import { daysSinceSent } from "../rules/days-since-sent.ts";
 import { NO_RESPONSE_STATUSES, noResponseDate } from "../rules/no-response.ts";
+import { REMINDER_STATUSES, reminderState, reminderThreshold } from "../rules/reminder.ts";
+import type { ReminderReason } from "../rules/types.ts";
+import { companyStatistics } from "./companies.ts";
 import {
   applicationInputSchema,
   dateSentAfterNextChangeMessage,
@@ -280,6 +284,7 @@ export async function getPipeline(user: CurrentUser, today: string): Promise<Pip
       id: application.id,
       companyName: company.name,
       roleTitle: application.roleTitle,
+      companyId: application.companyId,
       status: application.currentStatus,
       dateSent: application.dateSent,
     })
@@ -287,6 +292,8 @@ export async function getPipeline(user: CurrentUser, today: string): Promise<Pip
     .innerJoin(company, eq(company.id, application.companyId))
     .where(eq(application.userId, user.id))
     .orderBy(desc(application.dateSent), desc(application.createdAt));
+
+  const reminders = await evaluateReminders(user.id, rows, today);
 
   const columns: Pipeline["columns"] = { sent: [], in_process: [], interview: [], offer: [], closed: [] };
   for (const row of rows) {
@@ -296,11 +303,81 @@ export async function getPipeline(user: CurrentUser, today: string): Promise<Pip
       roleTitle: row.roleTitle,
       status: row.status,
       daysSinceSent: daysSinceSent(row.dateSent, today),
-      reminder: null, // R4/R12 come with prompt 06
+      reminder: reminders.get(row.id) ?? null,
     };
     columns[COLUMN_OF[row.status]].push(card);
   }
   return { columns };
+}
+
+type CardReminder = { daysQuiet: number; reason: ReminderReason };
+
+/**
+ * R4/R12: the reminder to show on each of the user's Sent / In process applications.
+ * A reminder shown for the first time is stored (one per quiet period) and recorded as
+ * `reminder_triggered`, in one transaction.
+ */
+async function evaluateReminders(
+  userId: string,
+  rows: { id: string; companyId: string; status: ApplicationStatus }[],
+  today: string,
+): Promise<Map<string, CardReminder>> {
+  const quiet = rows.filter((r) => (REMINDER_STATUSES as readonly ApplicationStatus[]).includes(r.status));
+  const result = new Map<string, CardReminder>();
+  if (quiet.length === 0) return result;
+
+  // The last status change of each application starts its current quiet period
+  const changes = await db
+    .select({ id: statusChange.id, applicationId: statusChange.applicationId, changedOn: statusChange.changedOn })
+    .from(statusChange)
+    .where(inArray(statusChange.applicationId, quiet.map((r) => r.id)))
+    .orderBy(asc(statusChange.changedOn), asc(statusChange.createdAt));
+  const lastChange = new Map<string, { id: string; changedOn: string }>();
+  for (const c of changes) lastChange.set(c.applicationId, { id: c.id, changedOn: c.changedOn });
+  const lastChangeIds = [...lastChange.values()].map((c) => c.id);
+
+  const [stored, stats] = await Promise.all([
+    lastChangeIds.length === 0
+      ? Promise.resolve([])
+      : db
+          .select({ statusChangeId: reminder.statusChangeId, reason: reminder.reason, outcome: reminder.outcome })
+          .from(reminder)
+          .where(inArray(reminder.statusChangeId, lastChangeIds)),
+    companyStatistics(quiet.map((r) => r.companyId)),
+  ]);
+  const storedByChange = new Map(stored.map((r) => [r.statusChangeId, r]));
+
+  for (const row of quiet) {
+    const last = lastChange.get(row.id);
+    if (!last) continue;
+    const threshold = reminderThreshold(stats.get(row.companyId)?.medianDays ?? null);
+    const existing = storedByChange.get(last.id) ?? null;
+    const state = reminderState({ status: row.status, lastChange: last, today, thresholdDays: threshold.days, existing });
+    const daysQuiet = daysBetween(last.changedOn, today);
+
+    if (state === "show" && existing) {
+      result.set(row.id, { daysQuiet, reason: existing.reason });
+    } else if (state === "trigger") {
+      await db.transaction(async (tx) => {
+        // The unique quiet period keeps concurrent loads to one reminder and one event
+        const inserted = await tx
+          .insert(reminder)
+          .values({ applicationId: row.id, statusChangeId: last.id, reason: threshold.reason, thresholdDays: threshold.days })
+          .onConflictDoNothing({ target: reminder.statusChangeId })
+          .returning({ id: reminder.id });
+        if (inserted.length === 0) return;
+        await recordEvent(
+          tx,
+          userId,
+          "reminder_triggered",
+          { application_id: row.id, reason: threshold.reason, threshold_days: threshold.days },
+          row.id,
+        );
+      });
+      result.set(row.id, { daysQuiet, reason: threshold.reason });
+    }
+  }
+  return result;
 }
 
 /** R5: an application that must become No response, as read before converting it. */

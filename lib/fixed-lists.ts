@@ -44,3 +44,13 @@ export type ManualStatus = (typeof MANUAL_STATUSES)[number];
 /** Pipeline columns (SPEC §4). "closed" groups Rejected and No response. */
 export const PIPELINE_COLUMNS = ["sent", "in_process", "interview", "offer", "closed"] as const;
 export type PipelineColumn = (typeof PIPELINE_COLUMNS)[number];
+
+/** Status names shown in the UI (SPEC §4). */
+export const STATUS_LABELS = {
+  sent: "Sent",
+  in_process: "In process",
+  interview: "Interview",
+  offer: "Offer",
+  rejected: "Rejected",
+  no_response: "No response",
+} as const satisfies Record<ManualStatus | "no_response", string>;

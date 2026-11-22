@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { getPipeline } from "@/lib/services/applications";
+import { changeStatus, convertToNoResponse, findNoResponseDue, getPipeline } from "@/lib/services/applications";
 import { AccessDeniedError } from "@/lib/services/errors";
 import {
   createCompany,
@@ -39,6 +39,31 @@ describe("US03 / US04-6/7 / US05 — Pipeline", () => {
     const changes = await getStatusChanges(id);
     expect(changes.at(-1)).toMatchObject({ status: "no_response", changedOn: "2026-10-31", isAutomatic: true });
     expect((await getApplicationRow(id)).currentStatus).toBe("no_response");
+  });
+
+  it("R5: a status change saved between reading and converting is never overwritten", async () => {
+    const { id } = await insertApplication({ user: ana, company: ferro, dateSent: "2026-09-01" });
+    const due = await findNoResponseDue(ana.id, TODAY);
+    expect(due.map((d) => d.id)).toEqual([id]);
+
+    // The student saves a reply while the pipeline load is between its read and its write
+    await changeStatus(ana, id, { status: "in_process", changedOn: TODAY }, TODAY);
+    await convertToNoResponse(due);
+
+    expect((await getApplicationRow(id)).currentStatus).toBe("in_process");
+    expect((await getStatusChanges(id)).map((c) => c.status)).toEqual(["sent", "in_process"]);
+  });
+
+  it("R5: Sent → In process → Sent saved meanwhile is not overwritten either", async () => {
+    const { id } = await insertApplication({ user: ana, company: ferro, dateSent: "2026-09-01" });
+    const due = await findNoResponseDue(ana.id, TODAY);
+
+    await changeStatus(ana, id, { status: "in_process", changedOn: "2026-11-10" }, TODAY);
+    await changeStatus(ana, id, { status: "sent", changedOn: TODAY }, TODAY);
+    await convertToNoResponse(due);
+
+    expect((await getApplicationRow(id)).currentStatus).toBe("sent");
+    expect((await getStatusChanges(id)).map((c) => c.status)).toEqual(["sent", "in_process", "sent"]);
   });
 
   it("US04-6: R5 is applied once — loading twice records one automatic change", async () => {

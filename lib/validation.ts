@@ -2,9 +2,19 @@
 // context) as parameters because some checks depend on it.
 import { z } from "zod";
 import type { ApplicationStatus } from "../db/schema.ts";
-import { CHANNELS, JOB_TYPES, SECTORS, type Channel, type JobType, type ManualStatus, type Sector } from "./fixed-lists.ts";
-import { notImplemented } from "./not-implemented.ts";
+import {
+  CHANNELS,
+  JOB_TYPES,
+  MANUAL_STATUSES,
+  SECTORS,
+  type Channel,
+  type JobType,
+  type ManualStatus,
+  type Sector,
+} from "./fixed-lists.ts";
+import { formatDisplayDate } from "./rules/dates.ts";
 import { isAllowedEmailDomain } from "./rules/email-domain.ts";
+import { checkStatusChange, type StatusChangeRejection } from "./rules/status-transition.ts";
 
 export const EMAIL_DOMAIN_MESSAGE = "Use your University of Porto email (@up.pt or @fe.up.pt)";
 export const DATE_SENT_FUTURE_MESSAGE = "Date sent cannot be in the future";
@@ -70,7 +80,48 @@ export type StatusChangeContext = {
   today: string;
 };
 
+/** R6 rejection messages, shared by the form and the service. */
+export function statusChangeMessage(reason: StatusChangeRejection, ctx: StatusChangeContext): string {
+  switch (reason) {
+    case "not_manual":
+      return "Choose a status";
+    case "same_status":
+      return "The application is already in this status";
+    case "future":
+      return "Date cannot be in the future";
+    case "before_date_sent":
+      return `Date cannot be before the date sent (${formatDisplayDate(ctx.dateSent)})`;
+    case "before_last_change":
+      return `Date cannot be before the last status change (${formatDisplayDate(ctx.lastChangeOn)})`;
+  }
+}
+
+/** US04-4: editing the date sent moves the initial "Sent" change, so it cannot pass the next one. */
+export function dateSentAfterNextChangeMessage(nextChangeOn: string): string {
+  return `Date sent cannot be after the next status change (${formatDisplayDate(nextChangeOn)})`;
+}
+
 /** US04-2/3, R6: manual status different from the current one; date checks of R6. */
 export function statusChangeInputSchema(ctx: StatusChangeContext): z.ZodType<StatusChangeInput, unknown> {
-  return notImplemented(ctx);
+  return z
+    .object({
+      status: z.enum(MANUAL_STATUSES, { error: "Choose a status" }),
+      changedOn: z
+        .string({ error: "Enter the date" })
+        .min(1, "Enter the date")
+        .pipe(z.iso.date({ error: "Enter a valid date" })),
+    })
+    .superRefine((input, issues) => {
+      const check = checkStatusChange({
+        from: ctx.currentStatus,
+        to: input.status,
+        changedOn: input.changedOn,
+        dateSent: ctx.dateSent,
+        lastChangeOn: ctx.lastChangeOn,
+        today: ctx.today,
+      });
+      if (check.ok) return;
+      const field = check.reason === "same_status" || check.reason === "not_manual" ? "status" : "changedOn";
+      issues.addIssue({ code: "custom", path: [field], message: statusChangeMessage(check.reason, ctx) });
+    });
 }

@@ -79,8 +79,11 @@ export function FormField({
   );
 }
 
+export type SelectOption = string | { value: string; label: string };
+
 type SelectFieldProps = FieldBase & {
-  options: readonly string[];
+  /** A string is both the value and the label. */
+  options: readonly SelectOption[];
   /** Shown first with an empty value, so nothing is chosen by default. */
   placeholder: string;
 };
@@ -101,11 +104,14 @@ export function SelectField({ id, label, options, placeholder, defaultValue, err
         className={controlClass}
       >
         <option value="">{placeholder}</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
+        {options.map((option) => {
+          const { value, label } = typeof option === "string" ? { value: option, label: option } : option;
+          return (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          );
+        })}
       </select>
       <FieldMessages id={id} hint={hint} errors={errors} />
     </div>

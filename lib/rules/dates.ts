@@ -29,3 +29,11 @@ export function lisbonToday(now: Date): string {
   const parts = Object.fromEntries(lisbonFormatter.formatToParts(now).map((p) => [p.type, p.value]));
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** SPEC §11: dates are shown as "12 Oct 2026". */
+export function formatDisplayDate(date: string): string {
+  const [year, month, day] = date.split("-");
+  return `${Number(day)} ${MONTHS[Number(month) - 1]} ${year}`;
+}

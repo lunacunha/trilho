@@ -15,3 +15,14 @@ export class AccessDeniedError extends Error {
     this.name = "AccessDeniedError";
   }
 }
+
+/** The input breaks a business rule the service enforces itself (e.g. R6). */
+export class ValidationError extends Error {
+  constructor(
+    readonly field: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}

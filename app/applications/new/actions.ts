@@ -4,19 +4,16 @@ import { redirect } from "next/navigation";
 import { lisbonToday } from "@/lib/rules/dates";
 import { createApplication, recordFormOpened } from "@/lib/services/applications";
 import { requireArea } from "@/lib/session";
-import { applicationInputSchema, formSessionIdSchema, type ApplicationInput } from "@/lib/validation";
-
-export type ApplicationField = keyof ApplicationInput;
+import { formSessionIdSchema } from "@/lib/validation";
+import { parseApplicationForm, type ApplicationFieldErrors, type ApplicationFormValues } from "../application-form";
 
 export type NewApplicationState = {
-  fieldErrors?: Partial<Record<ApplicationField, string[]>>;
+  fieldErrors?: ApplicationFieldErrors;
   message?: string;
-  values?: Record<ApplicationField, string>;
+  values?: ApplicationFormValues;
   /** Changes on every failed submit, so the form remounts with `values` (selects included). */
   submitId?: number;
 };
-
-const FIELDS: ApplicationField[] = ["company", "roleTitle", "sector", "channel", "jobType", "dateSent"];
 
 /** US02: validates on the server, creates the application, returns to the pipeline. */
 export async function createApplicationAction(
@@ -26,21 +23,11 @@ export async function createApplicationAction(
   const user = await requireArea("student");
   const today = lisbonToday(new Date());
 
-  const values = Object.fromEntries(FIELDS.map((f) => [f, String(formData.get(f) ?? "")])) as Record<
-    ApplicationField,
-    string
-  >;
   const submitId = (prev.submitId ?? 0) + 1;
 
-  const parsed = applicationInputSchema(today).safeParse(values);
-  if (!parsed.success) {
-    const fieldErrors: NewApplicationState["fieldErrors"] = {};
-    for (const issue of parsed.error.issues) {
-      const key = issue.path[0] as ApplicationField;
-      (fieldErrors[key] ??= []).push(issue.message);
-    }
-    return { fieldErrors, values, submitId };
-  }
+  const parsed = parseApplicationForm(formData, today);
+  const { values } = parsed;
+  if (!parsed.ok) return { fieldErrors: parsed.fieldErrors, values, submitId };
 
   const formSession = formSessionIdSchema.safeParse(formData.get("form_session_id"));
   try {
